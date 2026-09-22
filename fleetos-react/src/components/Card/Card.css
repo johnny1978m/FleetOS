@@ -1,0 +1,27 @@
+.fleet-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fleet-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.fleet-card-title {
+  color: #7b8794;
+  font-size: 14px;
+}
+
+.fleet-card-value {
+  color: #17212b;
+  font-size: 34px;
+  font-weight: 600;
+}
