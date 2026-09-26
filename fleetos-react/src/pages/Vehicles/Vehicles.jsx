@@ -1,73 +1,6 @@
 import { useMemo, useState } from "react";
+import { useFleet } from "../../context/FleetContext";
 import "./Vehicles.css";
-
-const initialVehicles = [
-  {
-    id: 1,
-    registration: "M AZ 5263",
-    brand: "Mercedes",
-    model: "Sprinter",
-    year: 2022,
-    km: 148520,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Attention",
-    driver: "Stanescu",
-    observations: "",
-  },
-  {
-    id: 2,
-    registration: "M AZ 5270",
-    brand: "Mercedes",
-    model: "Sprinter",
-    year: 2022,
-    km: 132800,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Good",
-    driver: "Popescu",
-    observations: "",
-  },
-  {
-    id: 3,
-    registration: "M AS 1679",
-    brand: "Ford",
-    model: "Transit",
-    year: 2021,
-    km: 176400,
-    serviceKm: 175000,
-    oilKm: 180000,
-    status: "Critical",
-    driver: "Ionescu",
-    observations: "",
-  },
-  {
-    id: 4,
-    registration: "M AZ 1725",
-    brand: "Opel",
-    model: "Vivaro",
-    year: 2022,
-    km: 119300,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Good",
-    driver: "Marin",
-    observations: "",
-  },
-  {
-    id: 5,
-    registration: "M AZ 1728",
-    brand: "Fiat",
-    model: "Ducato",
-    year: 2021,
-    km: 154700,
-    serviceKm: 155000,
-    oilKm: 160000,
-    status: "Attention",
-    driver: "Dumitru",
-    observations: "",
-  },
-];
 
 const emptyVehicle = {
   registration: "",
@@ -83,7 +16,8 @@ const emptyVehicle = {
 };
 
 function Vehicles() {
-  const [vehicles, setVehicles] = useState(initialVehicles);
+  const { vehicles, addVehicle, updateVehicle } = useFleet();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showForm, setShowForm] = useState(false);
@@ -165,21 +99,9 @@ function Vehicles() {
     };
 
     if (editingId !== null) {
-      setVehicles((current) =>
-        current.map((vehicle) =>
-          vehicle.id === editingId
-            ? { ...vehicle, ...vehicleData }
-            : vehicle,
-        ),
-      );
+      updateVehicle(editingId, vehicleData);
     } else {
-      setVehicles((current) => [
-        ...current,
-        {
-          id: Date.now(),
-          ...vehicleData,
-        },
-      ]);
+      addVehicle(vehicleData);
     }
 
     closeForm();
@@ -402,13 +324,18 @@ function Vehicles() {
 
             <div className="vehicles-form-field">
               <label>Current KM</label>
-              <input value={`${viewingVehicle.km.toLocaleString("de-DE")} km`} readOnly />
+              <input
+                value={`${viewingVehicle.km.toLocaleString("de-DE")} km`}
+                readOnly
+              />
             </div>
 
             <div className="vehicles-form-field">
               <label>Next Service</label>
               <input
-                value={`${viewingVehicle.serviceKm.toLocaleString("de-DE")} km`}
+                value={`${viewingVehicle.serviceKm.toLocaleString(
+                  "de-DE",
+                )} km`}
                 readOnly
               />
             </div>
@@ -416,7 +343,9 @@ function Vehicles() {
             <div className="vehicles-form-field">
               <label>Next Oil</label>
               <input
-                value={`${viewingVehicle.oilKm.toLocaleString("de-DE")} km`}
+                value={`${viewingVehicle.oilKm.toLocaleString(
+                  "de-DE",
+                )} km`}
                 readOnly
               />
             </div>

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import { FleetProvider } from "./context/FleetContext";
 import Layout from "./components/Layout/Layout";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -12,16 +13,18 @@ import Settings from "./pages/Settings/Settings";
 function App() {
   return (
     <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/vehicles" element={<Vehicles />} />
-          <Route path="/service" element={<Service />} />
-          <Route path="/documents" element={<Documents />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </Layout>
+      <FleetProvider>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/service" element={<Service />} />
+            <Route path="/documents" element={<Documents />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </Layout>
+      </FleetProvider>
     </BrowserRouter>
   );
 }
