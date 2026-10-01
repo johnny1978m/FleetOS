@@ -1,97 +1,121 @@
-import { useMemo, useState } from "react";
-
-const analyticsData = [
-  {
-    registration: "M AZ 5263",
-    vehicle: "Mercedes Sprinter",
-    currentKm: 148520,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Attention",
-  },
-  {
-    registration: "M AZ 5270",
-    vehicle: "Mercedes Sprinter",
-    currentKm: 132800,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Good",
-  },
-  {
-    registration: "M AS 1679",
-    vehicle: "Ford Transit",
-    currentKm: 176400,
-    serviceKm: 175000,
-    oilKm: 180000,
-    status: "Critical",
-  },
-  {
-    registration: "M AZ 1725",
-    vehicle: "Opel Vivaro",
-    currentKm: 119300,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Good",
-  },
-  {
-    registration: "M AZ 1728",
-    vehicle: "Fiat Ducato",
-    currentKm: 154700,
-    serviceKm: 155000,
-    oilKm: 160000,
-    status: "Attention",
-  },
-];
+﻿import { useMemo, useState } from "react";
+import "./Analytics.css";
+import { useFleet } from "../../context/useFleet";
 
 function Analytics() {
+  const { vehicles } = useFleet();
   const [search, setSearch] = useState("");
+
+  const getRemaining = (vehicle) => {
+    const serviceRemaining =
+      Number(vehicle.serviceKm || 0) - Number(vehicle.km || 0);
+
+    const oilRemaining =
+      Number(vehicle.oilKm || 0) - Number(vehicle.km || 0);
+
+    return Math.min(serviceRemaining, oilRemaining);
+  };
+
+  const analyticsVehicles = useMemo(() => {
+    return vehicles.map((vehicle) => {
+      const remaining = getRemaining(vehicle);
+
+      let status = "Good";
+
+      if (vehicle.status === "Critical" || remaining <= 2000) {
+        status = "Critical";
+      } else if (
+        vehicle.status === "Attention" ||
+        remaining <= 5000
+      ) {
+        status = "Attention";
+      }
+
+      return {
+        ...vehicle,
+        currentKm: Number(vehicle.km || 0),
+        serviceKm: Number(vehicle.serviceKm || 0),
+        oilKm: Number(vehicle.oilKm || 0),
+        remaining,
+        status,
+      };
+    });
+  }, [vehicles]);
 
   const filteredVehicles = useMemo(() => {
     const value = search.toLowerCase().trim();
 
-    return analyticsData.filter(
-      (vehicle) =>
+    return analyticsVehicles.filter((vehicle) => {
+      const registration =
+        vehicle.registration?.toLowerCase() || "";
+
+      const vehicleName =
+        `${vehicle.brand || ""} ${vehicle.model || ""}`.toLowerCase();
+
+      return (
         !value ||
-        vehicle.registration.toLowerCase().includes(value) ||
-        vehicle.vehicle.toLowerCase().includes(value),
+        registration.includes(value) ||
+        vehicleName.includes(value)
+      );
+    });
+  }, [analyticsVehicles, search]);
+
+  const stats = useMemo(() => {
+    const totalVehicles = analyticsVehicles.length;
+
+    const goodVehicles = analyticsVehicles.filter(
+      (vehicle) => vehicle.status === "Good",
+    ).length;
+
+    const attentionVehicles = analyticsVehicles.filter(
+      (vehicle) => vehicle.status === "Attention",
+    ).length;
+
+    const criticalVehicles = analyticsVehicles.filter(
+      (vehicle) => vehicle.status === "Critical",
+    ).length;
+
+    const totalKm = analyticsVehicles.reduce(
+      (total, vehicle) => total + vehicle.currentKm,
+      0,
     );
-  }, [search]);
 
-  const totalVehicles = analyticsData.length;
+    const averageKm = totalVehicles
+      ? Math.round(totalKm / totalVehicles)
+      : 0;
 
-  const goodVehicles = analyticsData.filter(
-    (vehicle) => vehicle.status === "Good",
-  ).length;
+    const serviceDue = analyticsVehicles.filter(
+      (vehicle) => vehicle.currentKm >= vehicle.serviceKm,
+    ).length;
 
-  const attentionVehicles = analyticsData.filter(
-    (vehicle) => vehicle.status === "Attention",
-  ).length;
+    const oilDue = analyticsVehicles.filter(
+      (vehicle) => vehicle.currentKm >= vehicle.oilKm,
+    ).length;
 
-  const criticalVehicles = analyticsData.filter(
-    (vehicle) => vehicle.status === "Critical",
-  ).length;
+    const attentionSoon = analyticsVehicles.filter(
+      (vehicle) =>
+        vehicle.remaining > 0 &&
+        vehicle.remaining <= 5000,
+    ).length;
 
-  const totalKm = analyticsData.reduce(
-    (total, vehicle) => total + vehicle.currentKm,
-    0,
-  );
-
-  const averageKm = Math.round(totalKm / totalVehicles);
-
-  const serviceDue = analyticsData.filter(
-    (vehicle) => vehicle.currentKm >= vehicle.serviceKm,
-  ).length;
-
-  const oilDue = analyticsData.filter(
-    (vehicle) => vehicle.currentKm >= vehicle.oilKm,
-  ).length;
+    return {
+      totalVehicles,
+      goodVehicles,
+      attentionVehicles,
+      criticalVehicles,
+      averageKm,
+      serviceDue,
+      oilDue,
+      attentionSoon,
+    };
+  }, [analyticsVehicles]);
 
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
         <div>
           <h1>Analytics</h1>
-          <p>Fleet performance and maintenance overview</p>
+          <p>Live fleet performance and maintenance overview</p>
         </div>
       </div>
 
@@ -99,28 +123,28 @@ function Analytics() {
         <div className="fleet-card">
           <span className="fleet-card-title">Total Vehicles</span>
           <strong className="fleet-card-value">
-            {totalVehicles}
+            {stats.totalVehicles}
           </strong>
         </div>
 
         <div className="fleet-card">
           <span className="fleet-card-title">Average KM</span>
           <strong className="fleet-card-value">
-            {averageKm.toLocaleString("de-DE")}
+            {stats.averageKm.toLocaleString("de-DE")}
           </strong>
         </div>
 
         <div className="fleet-card">
           <span className="fleet-card-title">Service Due</span>
           <strong className="fleet-card-value">
-            {serviceDue}
+            {stats.serviceDue}
           </strong>
         </div>
 
         <div className="fleet-card">
           <span className="fleet-card-title">Oil Due</span>
           <strong className="fleet-card-value">
-            {oilDue}
+            {stats.oilDue}
           </strong>
         </div>
       </section>
@@ -129,7 +153,7 @@ function Analytics() {
         <div className="section-header">
           <div>
             <h2>Fleet Status</h2>
-            <p>Current vehicle status distribution</p>
+            <p>Current calculated vehicle condition</p>
           </div>
         </div>
 
@@ -137,7 +161,7 @@ function Analytics() {
           <div className="status-item">
             <span className="status-dot status-green"></span>
             <div>
-              <strong>{goodVehicles}</strong>
+              <strong>{stats.goodVehicles}</strong>
               <span>Good</span>
             </div>
           </div>
@@ -145,7 +169,7 @@ function Analytics() {
           <div className="status-item">
             <span className="status-dot status-orange"></span>
             <div>
-              <strong>{attentionVehicles}</strong>
+              <strong>{stats.attentionVehicles}</strong>
               <span>Attention</span>
             </div>
           </div>
@@ -153,8 +177,16 @@ function Analytics() {
           <div className="status-item">
             <span className="status-dot status-red"></span>
             <div>
-              <strong>{criticalVehicles}</strong>
+              <strong>{stats.criticalVehicles}</strong>
               <span>Critical</span>
+            </div>
+          </div>
+
+          <div className="status-item">
+            <span className="status-dot status-orange"></span>
+            <div>
+              <strong>{stats.attentionSoon}</strong>
+              <span>Within 5,000 km</span>
             </div>
           </div>
         </div>
@@ -164,7 +196,7 @@ function Analytics() {
         <div className="section-header">
           <div>
             <h2>Vehicle Analytics</h2>
-            <p>Maintenance metrics by vehicle</p>
+            <p>Maintenance metrics from live fleet data</p>
           </div>
         </div>
 
@@ -188,51 +220,72 @@ function Analytics() {
                 <th>Current KM</th>
                 <th>Service KM</th>
                 <th>Oil KM</th>
+                <th>Remaining</th>
                 <th>Status</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredVehicles.map((vehicle) => (
-                <tr key={vehicle.registration}>
-                  <td>
-                    <div className="vehicle-name">
-                      <strong>{vehicle.vehicle}</strong>
-                    </div>
-                  </td>
+              {filteredVehicles.map((vehicle) => {
+                const remainingClass =
+                  vehicle.remaining <= 0
+                    ? "vehicle-status-critical"
+                    : vehicle.remaining <= 5000
+                      ? "vehicle-status-attention"
+                      : "vehicle-status-good";
 
-                  <td>
-                    <strong className="registration">
-                      {vehicle.registration}
-                    </strong>
-                  </td>
+                return (
+                  <tr key={vehicle.id}>
+                    <td>
+                      <div className="vehicle-name">
+                        <strong>
+                          {vehicle.brand} {vehicle.model}
+                        </strong>
+                        <span>
+                          {vehicle.driver || "No driver assigned"}
+                        </span>
+                      </div>
+                    </td>
 
-                  <td>
-                    {vehicle.currentKm.toLocaleString("de-DE")} km
-                  </td>
+                    <td>
+                      <strong className="registration">
+                        {vehicle.registration}
+                      </strong>
+                    </td>
 
-                  <td>
-                    {vehicle.serviceKm.toLocaleString("de-DE")} km
-                  </td>
+                    <td>
+                      {vehicle.currentKm.toLocaleString("de-DE")} km
+                    </td>
 
-                  <td>
-                    {vehicle.oilKm.toLocaleString("de-DE")} km
-                  </td>
+                    <td>
+                      {vehicle.serviceKm.toLocaleString("de-DE")} km
+                    </td>
 
-                  <td>
-                    <span
-                      className={`vehicle-status vehicle-status-${vehicle.status.toLowerCase()}`}
-                    >
-                      <span className="vehicle-status-dot"></span>
-                      {vehicle.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    <td>
+                      {vehicle.oilKm.toLocaleString("de-DE")} km
+                    </td>
+
+                    <td>
+                      <strong className={remainingClass}>
+                        {vehicle.remaining.toLocaleString("de-DE")} km
+                      </strong>
+                    </td>
+
+                    <td>
+                      <span
+                        className={`vehicle-status vehicle-status-${vehicle.status.toLowerCase()}`}
+                      >
+                        <span className="vehicle-status-dot"></span>
+                        {vehicle.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
 
               {filteredVehicles.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="vehicles-empty">
+                  <td colSpan="7" className="vehicles-empty">
                     No vehicles found.
                   </td>
                 </tr>
@@ -246,3 +299,5 @@ function Analytics() {
 }
 
 export default Analytics;
+
+
