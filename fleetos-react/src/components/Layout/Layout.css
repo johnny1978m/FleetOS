@@ -1,14 +1,29 @@
-.layout {
+﻿.layout {
   min-height: 100vh;
-  background: #f4f6f8;
+  background: #07111c;
+  color: #e8f1f8;
 }
 
 .layout-main {
-  margin-left: 250px;
+  margin-left: 224px;
   min-height: 100vh;
+  background: #07111c;
 }
 
 .layout-content {
-  padding: 30px;
-  min-height: calc(100vh - 80px);
+  padding: 0;
+  min-height: calc(100vh - 64px);
+  background: #07111c;
+}
+
+@media (max-width: 800px) {
+  .layout-main {
+    margin-left: 190px;
+  }
+}
+
+@media (max-width: 620px) {
+  .layout-main {
+    margin-left: 70px;
+  }
 }

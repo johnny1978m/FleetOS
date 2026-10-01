@@ -1,6 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
-
-const FleetContext = createContext(null);
+import { useEffect, useState } from "react";
+import { FleetContext } from "./FleetContextDefinition";
 
 const initialVehicles = [
   {
@@ -195,14 +194,4 @@ export function FleetProvider({ children }) {
       {children}
     </FleetContext.Provider>
   );
-}
-
-export function useFleet() {
-  const context = useContext(FleetContext);
-
-  if (!context) {
-    throw new Error("useFleet must be used inside FleetProvider");
-  }
-
-  return context;
 }

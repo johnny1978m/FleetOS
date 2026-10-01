@@ -1,335 +1,191 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
+import { useFleet } from "../../context/useFleet";
+import "./Documents.css";
 
-const initialDocuments = [
-  {
-    id: 1,
-    registration: "M AZ 5263",
-    vehicle: "Mercedes Sprinter",
-    type: "Insurance",
-    document: "RCA",
-    expiry: "2026-12-15",
-    status: "Valid",
-  },
-  {
-    id: 2,
-    registration: "M AZ 5270",
-    vehicle: "Mercedes Sprinter",
-    type: "Inspection",
-    document: "TÜV",
-    expiry: "2026-10-20",
-    status: "Attention",
-  },
-  {
-    id: 3,
-    registration: "M AS 1679",
-    vehicle: "Ford Transit",
-    type: "Insurance",
-    document: "RCA",
-    expiry: "2026-09-10",
-    status: "Expired",
-  },
-  {
-    id: 4,
-    registration: "M AZ 1725",
-    vehicle: "Opel Vivaro",
-    type: "Inspection",
-    document: "TÜV",
-    expiry: "2027-02-18",
-    status: "Valid",
-  },
-  {
-    id: 5,
-    registration: "M AZ 1728",
-    vehicle: "Fiat Ducato",
-    type: "Registration",
-    document: "Vehicle Documents",
-    expiry: "2027-04-05",
-    status: "Valid",
-  },
-];
+function getDocumentStatus(expiry) {
+  if (!expiry) return "Missing";
 
-const emptyDocument = {
-  registration: "",
-  vehicle: "",
-  type: "Insurance",
-  document: "",
-  expiry: "",
-  status: "Valid",
-};
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-function getStatusClass(status) {
-  return status.toLowerCase();
+  const expiryDate = new Date(`${expiry}T00:00:00`);
+  const diffDays = Math.ceil((expiryDate - today) / 86400000);
+
+  if (diffDays < 0) return "Expired";
+  if (diffDays <= 30) return "Attention";
+  return "Valid";
+}
+
+function formatDate(value) {
+  if (!value) return "â€”";
+  return new Date(`${value}T00:00:00`).toLocaleDateString("de-DE");
 }
 
 function Documents() {
-  const [documents, setDocuments] = useState(initialDocuments);
+  const { vehicles, documents, addDocument } = useFleet();
+
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState(emptyDocument);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState({
+    vehicleId: "",
+    type: "Insurance",
+    document: "RCA",
+    expiry: "",
+  });
+
+  const liveDocuments = useMemo(() => {
+    return documents.map((document) => ({
+      ...document,
+      status: getDocumentStatus(document.expiry),
+    }));
+  }, [documents]);
 
   const filteredDocuments = useMemo(() => {
-    const searchValue = search.toLowerCase().trim();
+    const value = search.toLowerCase().trim();
 
-    return documents.filter((document) => {
+    return liveDocuments.filter((document) => {
       const matchesSearch =
-        !searchValue ||
-        document.registration.toLowerCase().includes(searchValue) ||
-        document.vehicle.toLowerCase().includes(searchValue) ||
-        document.type.toLowerCase().includes(searchValue) ||
-        document.document.toLowerCase().includes(searchValue);
+        !value ||
+        String(document.registration || "").toLowerCase().includes(value) ||
+        String(document.vehicle || "").toLowerCase().includes(value) ||
+        String(document.type || "").toLowerCase().includes(value) ||
+        String(document.document || "").toLowerCase().includes(value);
 
       const matchesFilter =
         filter === "All" || document.status === filter;
 
       return matchesSearch && matchesFilter;
     });
-  }, [documents, search, filter]);
+  }, [liveDocuments, search, filter]);
 
-  const validCount = documents.filter(
-    (document) => document.status === "Valid",
-  ).length;
+  const stats = useMemo(() => {
+    const expired = liveDocuments.filter(
+      (document) => document.status === "Expired",
+    ).length;
 
-  const attentionCount = documents.filter(
-    (document) => document.status === "Attention",
-  ).length;
+    const attention = liveDocuments.filter(
+      (document) => document.status === "Attention",
+    ).length;
 
-  const expiredCount = documents.filter(
-    (document) => document.status === "Expired",
-  ).length;
+    const valid = liveDocuments.filter(
+      (document) => document.status === "Valid",
+    ).length;
 
-  const handleFormChange = (event) => {
-    const { name, value } = event.target;
-
-    setFormData((current) => ({
-      ...current,
-      [name]: value,
-    }));
-  };
+    return {
+      total: liveDocuments.length,
+      valid,
+      attention,
+      expired,
+    };
+  }, [liveDocuments]);
 
   const handleAddDocument = (event) => {
     event.preventDefault();
 
-    const newDocument = {
-      id: Date.now(),
-      registration: formData.registration.trim(),
-      vehicle: formData.vehicle.trim(),
-      type: formData.type,
-      document: formData.document.trim(),
-      expiry: formData.expiry,
-      status: formData.status,
-    };
+    const vehicle = vehicles.find(
+      (item) => String(item.id) === String(form.vehicleId),
+    );
 
-    setDocuments((current) => [...current, newDocument]);
-    setFormData(emptyDocument);
-    setShowForm(false);
-  };
+    if (!vehicle || !form.expiry) return;
 
-  const handleCancel = () => {
-    setFormData(emptyDocument);
-    setShowForm(false);
+    addDocument({
+      registration: vehicle.registration,
+      vehicle: `${vehicle.brand} ${vehicle.model}`,
+      type: form.type,
+      document: form.document,
+      expiry: form.expiry,
+      status: getDocumentStatus(form.expiry),
+    });
+
+    setForm({
+      vehicleId: "",
+      type: "Insurance",
+      document: "RCA",
+      expiry: "",
+    });
+    setModalOpen(false);
   };
 
   return (
-    <div className="dashboard-page">
-      <div className="dashboard-header">
+    <div className="documents-page">
+      <div className="documents-header">
         <div>
+          <div className="panel-kicker">FLEETOS COMPLIANCE</div>
           <h1>Documents</h1>
-          <p>Manage vehicle documents and expiration dates</p>
+          <p>Vehicle documents, expiry dates and compliance status</p>
         </div>
 
         <button
           type="button"
-          className="dashboard-action"
-          onClick={() => setShowForm(true)}
+          className="documents-primary-button"
+          onClick={() => setModalOpen(true)}
         >
           + Add Document
         </button>
       </div>
 
-      {showForm && (
-        <section className="dashboard-section">
-          <div className="section-header">
-            <div>
-              <h2>Add Document</h2>
-              <p>Enter the document information</p>
-            </div>
-          </div>
-
-          <form className="vehicles-form" onSubmit={handleAddDocument}>
-            <div className="vehicles-form-grid">
-              <div className="vehicles-form-field">
-                <label htmlFor="registration">Registration</label>
-                <input
-                  id="registration"
-                  name="registration"
-                  type="text"
-                  value={formData.registration}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-
-              <div className="vehicles-form-field">
-                <label htmlFor="vehicle">Vehicle</label>
-                <input
-                  id="vehicle"
-                  name="vehicle"
-                  type="text"
-                  value={formData.vehicle}
-                  onChange={handleFormChange}
-                  placeholder="Mercedes Sprinter"
-                  required
-                />
-              </div>
-
-              <div className="vehicles-form-field">
-                <label htmlFor="type">Type</label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleFormChange}
-                >
-                  <option value="Insurance">Insurance</option>
-                  <option value="Inspection">Inspection</option>
-                  <option value="Registration">Registration</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div className="vehicles-form-field">
-                <label htmlFor="document">Document</label>
-                <input
-                  id="document"
-                  name="document"
-                  type="text"
-                  value={formData.document}
-                  onChange={handleFormChange}
-                  placeholder="RCA / TÜV"
-                  required
-                />
-              </div>
-
-              <div className="vehicles-form-field">
-                <label htmlFor="expiry">Expiry Date</label>
-                <input
-                  id="expiry"
-                  name="expiry"
-                  type="date"
-                  value={formData.expiry}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-
-              <div className="vehicles-form-field">
-                <label htmlFor="status">Status</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleFormChange}
-                >
-                  <option value="Valid">Valid</option>
-                  <option value="Attention">Expiring Soon</option>
-                  <option value="Expired">Expired</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="vehicles-form-actions">
-              <button
-                type="button"
-                className="vehicles-cancel-button"
-                onClick={handleCancel}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                className="vehicles-save-button"
-              >
-                Save Document
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      <section className="dashboard-kpis">
-        <div className="fleet-card">
-          <span className="fleet-card-title">Total Documents</span>
-          <strong className="fleet-card-value">
-            {documents.length}
-          </strong>
+      <section className="documents-kpis">
+        <div className="documents-kpi">
+          <span>Total Documents</span>
+          <strong>{stats.total}</strong>
         </div>
 
-        <div className="fleet-card">
-          <span className="fleet-card-title">Valid</span>
-          <strong className="fleet-card-value">
-            {validCount}
-          </strong>
+        <div className="documents-kpi valid">
+          <span>Valid</span>
+          <strong>{stats.valid}</strong>
         </div>
 
-        <div className="fleet-card">
-          <span className="fleet-card-title">Expiring Soon</span>
-          <strong className="fleet-card-value">
-            {attentionCount}
-          </strong>
+        <div className="documents-kpi attention">
+          <span>Expiring Soon</span>
+          <strong>{stats.attention}</strong>
         </div>
 
-        <div className="fleet-card">
-          <span className="fleet-card-title">Expired</span>
-          <strong className="fleet-card-value">
-            {expiredCount}
-          </strong>
+        <div className="documents-kpi expired">
+          <span>Expired</span>
+          <strong>{stats.expired}</strong>
         </div>
       </section>
 
-      <section className="dashboard-section">
-        <div className="section-header">
+      <section className="documents-section">
+        <div className="documents-section-header">
           <div>
-            <h2>Vehicle Documents</h2>
-            <p>Insurance, inspection and registration documents</p>
+            <div className="panel-kicker">DOCUMENT CONTROL</div>
+            <h2>Fleet Documents</h2>
+            <p>Live expiry status calculated from the document date</p>
           </div>
         </div>
 
-        <div className="vehicles-toolbar">
-          <div className="vehicles-search">
-            <input
-              type="text"
-              placeholder="Search registration, vehicle or document..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </div>
+        <div className="documents-toolbar">
+          <input
+            type="text"
+            placeholder="Search registration, vehicle or document..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
 
-          <div className="vehicles-filter">
-            <select
-              value={filter}
-              onChange={(event) => setFilter(event.target.value)}
-            >
-              <option value="All">All Statuses</option>
-              <option value="Valid">Valid</option>
-              <option value="Attention">Expiring Soon</option>
-              <option value="Expired">Expired</option>
-            </select>
-          </div>
+          <select
+            value={filter}
+            onChange={(event) => setFilter(event.target.value)}
+          >
+            <option value="All">All Statuses</option>
+            <option value="Valid">Valid</option>
+            <option value="Attention">Expiring Soon</option>
+            <option value="Expired">Expired</option>
+            <option value="Missing">Missing</option>
+          </select>
         </div>
 
-        <div className="vehicles-table-wrapper">
-          <table className="vehicles-table">
+        <div className="documents-table-wrapper">
+          <table className="documents-table">
             <thead>
               <tr>
-                <th>Vehicle</th>
-                <th>Registration</th>
-                <th>Type</th>
-                <th>Document</th>
-                <th>Expiry Date</th>
-                <th>Status</th>
-                <th>Action</th>
+                <th>VEHICLE</th>
+                <th>REGISTRATION</th>
+                <th>TYPE</th>
+                <th>DOCUMENT</th>
+                <th>EXPIRY</th>
+                <th>STATUS</th>
               </tr>
             </thead>
 
@@ -337,51 +193,41 @@ function Documents() {
               {filteredDocuments.map((document) => (
                 <tr key={document.id}>
                   <td>
-                    <div className="vehicle-name">
+                    <div className="documents-vehicle">
                       <strong>{document.vehicle}</strong>
-                      <span>{document.type}</span>
                     </div>
                   </td>
 
                   <td>
-                    <strong className="registration">
+                    <strong className="documents-registration">
                       {document.registration}
                     </strong>
                   </td>
 
                   <td>{document.type}</td>
 
-                  <td>{document.document}</td>
-
                   <td>
-                    {new Date(document.expiry).toLocaleDateString(
-                      "de-DE",
-                    )}
+                    <strong>{document.document}</strong>
                   </td>
+
+                  <td>{formatDate(document.expiry)}</td>
 
                   <td>
                     <span
-                      className={`vehicle-status vehicle-status-${getStatusClass(
-                        document.status,
-                      )}`}
+                      className={`documents-status documents-status-${document.status.toLowerCase()}`}
                     >
-                      <span className="vehicle-status-dot"></span>
-                      {document.status}
+                      <span className="documents-status-dot"></span>
+                      {document.status === "Attention"
+                        ? "Expiring Soon"
+                        : document.status}
                     </span>
-                  </td>
-
-                  <td>
-                    <div className="vehicle-actions">
-                      <button type="button">View</button>
-                      <button type="button">Upload</button>
-                    </div>
                   </td>
                 </tr>
               ))}
 
               {filteredDocuments.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="vehicles-empty">
+                  <td colSpan="6" className="documents-empty">
                     No documents found.
                   </td>
                 </tr>
@@ -390,8 +236,114 @@ function Documents() {
           </table>
         </div>
       </section>
+
+      {modalOpen && (
+        <div
+          className="documents-modal-backdrop"
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="documents-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="documents-modal-header">
+              <div>
+                <div className="panel-kicker">FLEETOS COMPLIANCE</div>
+                <h2>Add Document</h2>
+                <p>Create a document record for a fleet vehicle.</p>
+              </div>
+
+              <button
+                type="button"
+                className="documents-modal-close"
+                onClick={() => setModalOpen(false)}
+              >
+                Ã—
+              </button>
+            </div>
+
+            <form className="documents-form" onSubmit={handleAddDocument}>
+              <label>
+                <span>VEHICLE</span>
+                <select
+                  value={form.vehicleId}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      vehicleId: event.target.value,
+                    }))
+                  }
+                  required
+                >
+                  <option value="">Select vehicle</option>
+                  {vehicles.map((vehicle) => (
+                    <option key={vehicle.id} value={vehicle.id}>
+                      {vehicle.registration} â€” {vehicle.brand} {vehicle.model}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>TYPE</span>
+                <select
+                  value={form.type}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      type: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="Insurance">Insurance</option>
+                  <option value="Inspection">Inspection</option>
+                  <option value="Registration">Registration</option>
+                  <option value="License">License</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+
+              <label>
+                <span>DOCUMENT</span>
+                <input
+                  type="text"
+                  value={form.document}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      document: event.target.value,
+                    }))
+                  }
+                  placeholder="RCA / TÃœV / Registration..."
+                  required
+                />
+              </label>
+
+              <label>
+                <span>EXPIRY DATE</span>
+                <input
+                  type="date"
+                  value={form.expiry}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      expiry: event.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+
+              <button type="submit" className="documents-form-save">
+                Save Document
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default Documents;
+

@@ -1,5 +1,14 @@
-import { NavLink } from "react-router-dom";
+﻿import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
+
+const navigation = [
+  { to: "/", label: "Dashboard", icon: "▦" },
+  { to: "/vehicles", label: "Vehicles", icon: "▣" },
+  { to: "/service", label: "Service", icon: "⚙" },
+  { to: "/documents", label: "Documents", icon: "▤" },
+  { to: "/analytics", label: "Analytics", icon: "▥" },
+  { to: "/settings", label: "Settings", icon: "◉" },
+];
 
 function Sidebar() {
   return (
@@ -9,31 +18,29 @@ function Sidebar() {
         <span>Fleet Management</span>
       </div>
 
+      <div className="sidebar-section-title">MAIN MENU</div>
+
       <nav className="sidebar-nav">
-        <NavLink to="/" className="sidebar-link">
-          Dashboard
-        </NavLink>
-
-        <NavLink to="/vehicles" className="sidebar-link">
-          Vehicles
-        </NavLink>
-
-        <NavLink to="/service" className="sidebar-link">
-          Service
-        </NavLink>
-
-        <NavLink to="/documents" className="sidebar-link">
-          Documents
-        </NavLink>
-
-        <NavLink to="/analytics" className="sidebar-link">
-          Analytics
-        </NavLink>
-
-        <NavLink to="/settings" className="sidebar-link">
-          Settings
-        </NavLink>
+        {navigation.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            className="sidebar-link"
+          >
+            <span className="sidebar-link-icon">{item.icon}</span>
+            <span className="sidebar-link-label">{item.label}</span>
+          </NavLink>
+        ))}
       </nav>
+
+      <div className="sidebar-status">
+        <span className="sidebar-status-dot"></span>
+        <div>
+          <strong>System Online</strong>
+          <small>FleetOS Control Center</small>
+        </div>
+      </div>
 
       <div className="sidebar-footer">
         <span>FleetOS</span>
