@@ -273,7 +273,7 @@ function Service() {
                       </strong>
                       <span>
                         {service.serviceType}
-                        {service.driver ? ` â€¢ ${service.driver}` : ""}
+                        {service.driver ? ` - ${service.driver}` : ""}
                       </span>
                     </div>
                   </td>
@@ -365,7 +365,7 @@ function Service() {
                 <h2>Service History</h2>
                 <p>
                   {selectedVehicle
-                    ? `${selectedVehicle.registration} â€¢ ${selectedVehicle.brand} ${selectedVehicle.model}`
+                    ? `${selectedVehicle.registration} - ${selectedVehicle.brand} ${selectedVehicle.model}`
                     : "All recorded maintenance"}
                 </p>
               </div>
@@ -376,7 +376,7 @@ function Service() {
                 onClick={closeHistory}
                 aria-label="Close"
               >
-                Ã—
+                X
               </button>
             </div>
 
@@ -393,7 +393,7 @@ function Service() {
                   <option value="">Select vehicle</option>
                   {vehicles.map((vehicle) => (
                     <option key={vehicle.id} value={vehicle.id}>
-                      {vehicle.registration} â€” {vehicle.brand} {vehicle.model}
+                      {vehicle.registration} - {vehicle.brand} {vehicle.model}
                     </option>
                   ))}
                 </select>
@@ -484,7 +484,7 @@ function Service() {
                     <div className="service-history-item-main">
                       <strong>{entry.type}</strong>
                       <span>
-                        {entry.registration} â€¢{" "}
+                        {entry.registration} -{" "}
                         {Number(entry.km || 0).toLocaleString("de-DE")} km
                       </span>
                     </div>
@@ -509,4 +509,5 @@ function Service() {
 }
 
 export default Service;
+
 
