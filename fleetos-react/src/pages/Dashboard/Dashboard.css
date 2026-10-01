@@ -632,3 +632,128 @@
     display: none;
   }
 }
+
+/* Recent Fleet Activity */
+.recent-activity-list {
+  padding: 2px 18px 12px;
+}
+
+.recent-activity-item {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 70px;
+  padding: 10px 0;
+  border-bottom: 1px solid #183044;
+}
+
+.recent-activity-item:last-child {
+  border-bottom: 0;
+}
+
+.activity-type {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(53, 185, 255, 0.1);
+  border: 1px solid rgba(53, 185, 255, 0.16);
+}
+
+.activity-type span {
+  color: #35b9ff;
+  font-size: 15px;
+}
+
+.activity-info {
+  min-width: 0;
+}
+
+.activity-info strong,
+.activity-info span {
+  display: block;
+}
+
+.activity-info strong {
+  color: #e9f2f7;
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-info span {
+  margin-top: 4px;
+  color: #7891a3;
+  font-size: 11px;
+}
+
+.activity-meta {
+  min-width: 90px;
+  text-align: right;
+}
+
+.activity-meta span,
+.activity-meta small {
+  display: block;
+}
+
+.activity-meta span {
+  color: #9fb2bf;
+  font-size: 10px;
+}
+
+.activity-meta small {
+  margin-top: 4px;
+  color: #35b9ff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.empty-activity {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #dce7ed;
+}
+
+.empty-activity strong {
+  font-size: 13px;
+}
+
+.empty-activity span {
+  color: #71899b;
+  font-size: 11px;
+}
+
+.action-item a {
+  color: #35b9ff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+
+.action-item a:hover,
+.panel-link:hover {
+  color: #8adfff;
+  text-decoration: none;
+}
+
+@media (max-width: 560px) {
+  .recent-activity-item {
+    grid-template-columns: 36px 1fr;
+  }
+
+  .activity-meta {
+    grid-column: 2;
+    min-width: 0;
+    text-align: left;
+  }
+}
