@@ -8,6 +8,7 @@ import Vehicles from "./pages/Vehicles/Vehicles";
 import Service from "./pages/Service/Service";
 import Documents from "./pages/Documents/Documents";
 import Alerts from "./pages/Alerts/Alerts";
+import History from "./pages/History/History";
 import Analytics from "./pages/Analytics/Analytics";
 import Settings from "./pages/Settings/Settings";
 
@@ -22,6 +23,7 @@ function App() {
             <Route path="/service" element={<Service />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/alerts" element={<Alerts />} />
+            <Route path="/history" element={<History />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>

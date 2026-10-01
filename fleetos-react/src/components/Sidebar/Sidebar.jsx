@@ -7,6 +7,7 @@ const navigation = [
   { to: "/service", label: "Service", icon: "⚙" },
   { to: "/documents", label: "Documents", icon: "▤" },
   { to: "/alerts", label: "Alerts", icon: "⚠" },
+  { to: "/history", label: "History", icon: "◷" },
   { to: "/analytics", label: "Analytics", icon: "▥" },
   { to: "/settings", label: "Settings", icon: "◉" },
 ];
@@ -52,5 +53,6 @@ function Sidebar() {
 }
 
 export default Sidebar;
+
 
 
