@@ -16,6 +16,27 @@ const emptyVehicle = {
   observations: "",
 };
 
+function getEffectiveStatus(vehicle) {
+  const rank = { Good: 0, Attention: 1, Critical: 2 };
+  const km = Number(vehicle.km || 0);
+  const targets = [Number(vehicle.serviceKm || 0), Number(vehicle.oilKm || 0)]
+    .filter((target) => target > 0)
+    .map((target) => target - km);
+
+  let computed = "Good";
+
+  if (targets.length > 0) {
+    const remaining = Math.min(...targets);
+
+    if (remaining <= 2000) computed = "Critical";
+    else if (remaining <= 5000) computed = "Attention";
+  }
+
+  const manual = rank[vehicle.status] === undefined ? "Good" : vehicle.status;
+
+  return rank[manual] >= rank[computed] ? manual : computed;
+}
+
 function Vehicles() {
   const { vehicles, addVehicle, updateVehicle } = useFleet();
   const navigate = useNavigate();
@@ -39,7 +60,7 @@ function Vehicles() {
         vehicle.driver.toLowerCase().includes(searchValue);
 
       const matchesStatus =
-        statusFilter === "All" || vehicle.status === statusFilter;
+        statusFilter === "All" || getEffectiveStatus(vehicle) === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
@@ -359,7 +380,7 @@ function Vehicles() {
 
             <div className="vehicles-form-field">
               <label>Status</label>
-              <input value={viewingVehicle.status} readOnly />
+              <input value={getEffectiveStatus(viewingVehicle)} readOnly />
             </div>
 
             <div className="vehicles-form-field vehicles-form-field-full">
@@ -450,10 +471,10 @@ function Vehicles() {
 
                   <td>
                     <span
-                      className={`vehicle-status vehicle-status-${vehicle.status.toLowerCase()}`}
+                      className={`vehicle-status vehicle-status-${getEffectiveStatus(vehicle).toLowerCase()}`}
                     >
                       <span className="vehicle-status-dot"></span>
-                      {vehicle.status}
+                      {getEffectiveStatus(vehicle)}
                     </span>
                   </td>
 
