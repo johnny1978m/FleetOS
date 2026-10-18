@@ -352,3 +352,33 @@
   }
 }
 
+
+.documents-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.documents-actions button {
+  padding: 6px 10px;
+  border: 1px solid #23455a;
+  border-radius: 5px;
+  background: #0b1a27;
+  color: #83a0b1;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.documents-actions button:hover {
+  border-color: #278dbb;
+  background: #0e2434;
+  color: #39baf3;
+}
+
+.documents-actions .documents-delete:hover {
+  border-color: #ef535e;
+  background: rgba(239, 83, 94, 0.1);
+  color: #ef535e;
+}

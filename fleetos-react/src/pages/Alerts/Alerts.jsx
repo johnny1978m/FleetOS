@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
 import "./Alerts.css";
 
@@ -26,7 +26,7 @@ function getDocumentStatus(expiry) {
 }
 
 function formatDate(value) {
-  if (!value) return "â€”";
+  if (!value) return "-";
   return new Date(`${value}T00:00:00`).toLocaleDateString("de-DE");
 }
 

@@ -181,6 +181,18 @@ export function FleetProvider({ children }) {
     ]);
   };
 
+  const updateDocument = (id, documentData) => {
+    setDocuments((current) =>
+      current.map((document) =>
+        document.id === id ? { ...document, ...documentData } : document,
+      ),
+    );
+  };
+
+  const deleteDocument = (id) => {
+    setDocuments((current) => current.filter((document) => document.id !== id));
+  };
+
   return (
     <FleetContext.Provider
       value={{
@@ -189,6 +201,8 @@ export function FleetProvider({ children }) {
         addVehicle,
         updateVehicle,
         addDocument,
+        updateDocument,
+        deleteDocument,
       }}
     >
       {children}

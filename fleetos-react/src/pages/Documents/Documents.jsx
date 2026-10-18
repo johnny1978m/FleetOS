@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
 import "./Documents.css";
 
@@ -17,16 +17,18 @@ function getDocumentStatus(expiry) {
 }
 
 function formatDate(value) {
-  if (!value) return "â€”";
+  if (!value) return "-";
   return new Date(`${value}T00:00:00`).toLocaleDateString("de-DE");
 }
 
 function Documents() {
-  const { vehicles, documents, addDocument } = useFleet();
+  const { vehicles, documents, addDocument, updateDocument, deleteDocument } =
+    useFleet();
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     vehicleId: "",
     type: "Insurance",
@@ -80,7 +82,41 @@ function Documents() {
     };
   }, [liveDocuments]);
 
-  const handleAddDocument = (event) => {
+  const emptyForm = {
+    vehicleId: "",
+    type: "Insurance",
+    document: "RCA",
+    expiry: "",
+  };
+
+  const openAddModal = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (document) => {
+    const vehicle = vehicles.find(
+      (item) => item.registration === document.registration,
+    );
+
+    setEditingId(document.id);
+    setForm({
+      vehicleId: vehicle ? String(vehicle.id) : "",
+      type: document.type || "Other",
+      document: document.document || "",
+      expiry: document.expiry || "",
+    });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingId(null);
+    setForm(emptyForm);
+  };
+
+  const handleSaveDocument = (event) => {
     event.preventDefault();
 
     const vehicle = vehicles.find(
@@ -89,22 +125,32 @@ function Documents() {
 
     if (!vehicle || !form.expiry) return;
 
-    addDocument({
+    const documentData = {
       registration: vehicle.registration,
       vehicle: `${vehicle.brand} ${vehicle.model}`,
       type: form.type,
-      document: form.document,
+      document: form.document.trim(),
       expiry: form.expiry,
       status: getDocumentStatus(form.expiry),
-    });
+    };
 
-    setForm({
-      vehicleId: "",
-      type: "Insurance",
-      document: "RCA",
-      expiry: "",
-    });
-    setModalOpen(false);
+    if (editingId !== null) {
+      updateDocument(editingId, documentData);
+    } else {
+      addDocument(documentData);
+    }
+
+    closeModal();
+  };
+
+  const handleDeleteDocument = (document) => {
+    const confirmed = window.confirm(
+      `Delete ${document.document} for ${document.registration}? This cannot be undone.`,
+    );
+
+    if (confirmed) {
+      deleteDocument(document.id);
+    }
   };
 
   return (
@@ -119,7 +165,7 @@ function Documents() {
         <button
           type="button"
           className="documents-primary-button"
-          onClick={() => setModalOpen(true)}
+          onClick={openAddModal}
         >
           + Add Document
         </button>
@@ -186,6 +232,7 @@ function Documents() {
                 <th>DOCUMENT</th>
                 <th>EXPIRY</th>
                 <th>STATUS</th>
+                <th>ACTIONS</th>
               </tr>
             </thead>
 
@@ -222,12 +269,31 @@ function Documents() {
                         : document.status}
                     </span>
                   </td>
+
+                  <td>
+                    <div className="documents-actions">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(document)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="documents-delete"
+                        onClick={() => handleDeleteDocument(document)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
 
               {filteredDocuments.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="documents-empty">
+                  <td colSpan="7" className="documents-empty">
                     No documents found.
                   </td>
                 </tr>
@@ -240,7 +306,7 @@ function Documents() {
       {modalOpen && (
         <div
           className="documents-modal-backdrop"
-          onClick={() => setModalOpen(false)}
+          onClick={closeModal}
         >
           <div
             className="documents-modal"
@@ -249,20 +315,24 @@ function Documents() {
             <div className="documents-modal-header">
               <div>
                 <div className="panel-kicker">FLEETOS COMPLIANCE</div>
-                <h2>Add Document</h2>
-                <p>Create a document record for a fleet vehicle.</p>
+                <h2>{editingId !== null ? "Edit Document" : "Add Document"}</h2>
+                <p>
+                  {editingId !== null
+                    ? "Update this document record."
+                    : "Create a document record for a fleet vehicle."}
+                </p>
               </div>
 
               <button
                 type="button"
                 className="documents-modal-close"
-                onClick={() => setModalOpen(false)}
+                onClick={closeModal}
               >
-                Ã—
+                {"\u00d7"}
               </button>
             </div>
 
-            <form className="documents-form" onSubmit={handleAddDocument}>
+            <form className="documents-form" onSubmit={handleSaveDocument}>
               <label>
                 <span>VEHICLE</span>
                 <select
@@ -278,7 +348,7 @@ function Documents() {
                   <option value="">Select vehicle</option>
                   {vehicles.map((vehicle) => (
                     <option key={vehicle.id} value={vehicle.id}>
-                      {vehicle.registration} â€” {vehicle.brand} {vehicle.model}
+                      {vehicle.registration} - {vehicle.brand} {vehicle.model}
                     </option>
                   ))}
                 </select>
@@ -314,7 +384,7 @@ function Documents() {
                       document: event.target.value,
                     }))
                   }
-                  placeholder="RCA / TÃœV / Registration..."
+                  placeholder="RCA / TUV / Registration..."
                   required
                 />
               </label>
@@ -335,7 +405,7 @@ function Documents() {
               </label>
 
               <button type="submit" className="documents-form-save">
-                Save Document
+                {editingId !== null ? "Update Document" : "Save Document"}
               </button>
             </form>
           </div>
@@ -346,4 +416,3 @@ function Documents() {
 }
 
 export default Documents;
-
