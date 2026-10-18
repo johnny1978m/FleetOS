@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useFleet } from "../../context/useFleet";
 import "./Vehicles.css";
 
@@ -17,6 +18,7 @@ const emptyVehicle = {
 
 function Vehicles() {
   const { vehicles, addVehicle, updateVehicle } = useFleet();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -457,6 +459,12 @@ function Vehicles() {
 
                   <td>
                     <div className="vehicle-actions">
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                      >
+                        Profile
+                      </button>
                       <button
                         type="button"
                         onClick={() => setViewingVehicle(vehicle)}

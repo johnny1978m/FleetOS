@@ -1,4 +1,4 @@
-﻿import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import "./Topbar.css";
 
 const pageInfo = {
@@ -22,6 +22,18 @@ const pageInfo = {
     title: "Analytics",
     subtitle: "Fleet performance and maintenance analytics",
   },
+  "/alerts": {
+    title: "Alerts",
+    subtitle: "Maintenance and document alerts",
+  },
+  "/history": {
+    title: "History",
+    subtitle: "Fleet activity timeline",
+  },
+  "/vehicles/profile": {
+    title: "Vehicle Profile",
+    subtitle: "Vehicle details, documents and service history",
+  },
   "/settings": {
     title: "Settings",
     subtitle: "FleetOS application settings",
@@ -30,7 +42,10 @@ const pageInfo = {
 
 function Topbar() {
   const location = useLocation();
-  const currentPage = pageInfo[location.pathname] || pageInfo["/"];
+  const path = location.pathname.startsWith("/vehicles/")
+    ? "/vehicles/profile"
+    : location.pathname;
+  const currentPage = pageInfo[path] || pageInfo["/"];
 
   return (
     <header className="topbar">

@@ -1,10 +1,11 @@
-﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { FleetProvider } from "./context/FleetContext";
 import Layout from "./components/Layout/Layout";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Vehicles from "./pages/Vehicles/Vehicles";
+import VehicleDetails from "./pages/Vehicles/VehicleDetails";
 import Service from "./pages/Service/Service";
 import Documents from "./pages/Documents/Documents";
 import Alerts from "./pages/Alerts/Alerts";
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/vehicles/:id" element={<VehicleDetails />} />
             <Route path="/service" element={<Service />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/alerts" element={<Alerts />} />
