@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
 import "./Service.css";
 
@@ -37,7 +37,7 @@ function formatKm(value) {
 }
 
 function Service() {
-  const { vehicles } = useFleet();
+  const { vehicles, updateVehicle } = useFleet();
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
@@ -48,6 +48,7 @@ function Service() {
     type: "Service",
     date: new Date().toISOString().slice(0, 10),
     km: "",
+    nextKm: "",
     notes: "",
   });
 
@@ -129,6 +130,7 @@ function Service() {
       type: "Service",
       date: new Date().toISOString().slice(0, 10),
       km: "",
+    nextKm: "",
       notes: "",
     });
   };
@@ -150,6 +152,7 @@ function Service() {
       registration: vehicle.registration,
       vehicle: `${vehicle.brand} ${vehicle.model}`,
       type: form.type,
+      serviceType: form.type,
       date: form.date,
       km: Number(form.km),
       notes: form.notes.trim(),
@@ -157,10 +160,28 @@ function Service() {
 
     persistHistory([entry, ...history]);
 
+    const recordKm = Number(form.km);
+    const nextKm = Number(form.nextKm);
+    const changes = {};
+
+    if (recordKm > Number(vehicle.km || 0)) {
+      changes.km = recordKm;
+    }
+
+    if (nextKm > recordKm) {
+      if (form.type === "Service") changes.serviceKm = nextKm;
+      if (form.type === "Oil") changes.oilKm = nextKm;
+    }
+
+    if (Object.keys(changes).length > 0) {
+      updateVehicle(vehicle.id, changes);
+    }
+
     setForm({
       type: "Service",
       date: new Date().toISOString().slice(0, 10),
       km: "",
+    nextKm: "",
       notes: "",
     });
   };
@@ -464,6 +485,22 @@ function Service() {
                     }))
                   }
                   placeholder="Work performed / parts replaced..."
+                />
+              </div>
+
+              <div className="service-history-field">
+                <label>NEXT DUE KM (OPTIONAL)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.nextKm}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      nextKm: event.target.value,
+                    }))
+                  }
+                  placeholder="Updates next Service or Oil"
                 />
               </div>
 
