@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useFleet } from "../../context/useFleet";
 import "./VehicleDetails.css";
 
@@ -81,6 +81,13 @@ function remainingText(currentKm, targetKm) {
   return `${remaining.toLocaleString("de-DE")} km remaining`;
 }
 
+function formatMoney(value) {
+  return Number(value || 0).toLocaleString("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  });
+}
+
 function StatusBadge({ status, label }) {
   return (
     <span className={`vprofile-status vprofile-status-${statusKey(status)}`}>
@@ -93,7 +100,7 @@ function StatusBadge({ status, label }) {
 function VehicleDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { vehicles, documents } = useFleet();
+  const { vehicles, documents, costs } = useFleet();
 
   const history = useMemo(() => {
     return loadHistory()
@@ -132,6 +139,28 @@ function VehicleDetails() {
       ...document,
       liveStatus: getDocumentStatus(document.expiry),
     }));
+
+  const alertDocuments = vehicleDocuments.filter(
+    (document) =>
+      document.liveStatus === "Expired" ||
+      document.liveStatus === "Attention" ||
+      document.liveStatus === "Missing",
+  );
+  const expiredCount = vehicleDocuments.filter(
+    (document) => document.liveStatus === "Expired",
+  ).length;
+
+  const vehicleCosts = (costs || [])
+    .filter((cost) => cost.registration === vehicle.registration)
+    .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+  const totalCosts = vehicleCosts.reduce(
+    (sum, cost) => sum + Number(cost.amount || 0),
+    0,
+  );
+  const thisYear = String(new Date().getFullYear());
+  const yearCosts = vehicleCosts
+    .filter((cost) => String(cost.date || "").startsWith(thisYear))
+    .reduce((sum, cost) => sum + Number(cost.amount || 0), 0);
 
   return (
     <div className="vprofile-page">
@@ -188,7 +217,40 @@ function VehicleDetails() {
           </strong>
           <small>{remainingText(currentKm, vehicle.oilKm)}</small>
         </div>
+
+        <div
+          className={`vprofile-kpi ${
+            expiredCount > 0
+              ? "vprofile-kpi-critical"
+              : alertDocuments.length > 0
+                ? "vprofile-kpi-attention"
+                : "vprofile-kpi-good"
+          }`}
+        >
+          <span>Document Alerts</span>
+          <strong>{alertDocuments.length}</strong>
+          <small>
+            {alertDocuments.length === 0
+              ? "All documents valid"
+              : `${expiredCount} expired, ${
+                  alertDocuments.length - expiredCount
+                } need attention`}
+          </small>
+        </div>
+
+        <div className="vprofile-kpi">
+          <span>Total Costs</span>
+          <strong>{formatMoney(totalCosts)}</strong>
+          <small>{`${formatMoney(yearCosts)} in ${thisYear}`}</small>
+        </div>
       </section>
+
+      <nav className="vprofile-quicklinks">
+        <Link to="/service">Service</Link>
+        <Link to="/documents">Documents</Link>
+        <Link to="/costs">Costs</Link>
+        <Link to="/history">History</Link>
+      </nav>
 
       <div className="vprofile-grid">
         <section className="vprofile-card">
@@ -259,6 +321,35 @@ function VehicleDetails() {
           )}
         </section>
       </div>
+
+      <section className="vprofile-card vprofile-costs-card">
+        <div className="vprofile-card-header">
+          <h2>Costs</h2>
+          <span>{vehicleCosts.length} records</span>
+        </div>
+
+        {vehicleCosts.length > 0 ? (
+          <ul className="vprofile-list">
+            {vehicleCosts.slice(0, 5).map((cost) => (
+              <li key={cost.id} className="vprofile-list-item">
+                <div>
+                  <strong>{cost.category || "Other"}</strong>
+                  <span>{cost.notes || "No notes"}</span>
+                </div>
+
+                <div className="vprofile-list-meta">
+                  <strong>{formatMoney(cost.amount)}</strong>
+                  <span>{formatDate(cost.date)}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="vprofile-empty">
+            No costs recorded yet. Add them from the Costs page.
+          </p>
+        )}
+      </section>
 
       <section className="vprofile-card">
         <div className="vprofile-card-header">
