@@ -1,11 +1,21 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
 import "./History.css";
 
 const HISTORY_KEY = "fleetos-service-history";
 
+function idToDate(id) {
+  const number = Number(id);
+
+  if (number > 1000000000000) {
+    return new Date(number).toISOString().slice(0, 10);
+  }
+
+  return null;
+}
+
 function History() {
-  const { vehicles, documents } = useFleet();
+  const { vehicles, documents, costs } = useFleet();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -20,7 +30,7 @@ function History() {
         title: `${vehicle.registration} added to fleet`,
         description: `${vehicle.brand} ${vehicle.model} (${vehicle.year})`,
         vehicle: vehicle.registration,
-        date: vehicle.createdAt || null,
+        date: vehicle.createdAt || idToDate(vehicle.id),
         icon: "▣",
       });
     });
@@ -49,13 +59,28 @@ function History() {
       result.push({
         id: `document-${document.id || index}`,
         type: "Document",
-        title: document.name || document.type || "Document",
-        description: document.expiryDate
-          ? `Valid until ${new Date(document.expiryDate).toLocaleDateString("de-DE")}`
+        title: `${document.document || document.type || "Document"} (${document.type || "Other"})`,
+        description: document.expiry
+          ? `Expires ${new Date(`${document.expiry}T00:00:00`).toLocaleDateString("de-DE")}`
           : "Document added",
         vehicle: document.registration || document.vehicle || "Fleet",
-        date: document.createdAt || document.expiryDate || null,
+        date: document.createdAt || idToDate(document.id) || document.expiry || null,
         icon: "▤",
+      });
+    });
+
+    (costs || []).forEach((cost, index) => {
+      result.push({
+        id: `cost-${cost.id || index}`,
+        type: "Cost",
+        title: `${cost.category || "Other"} cost`,
+        description: `${Number(cost.amount || 0).toLocaleString("de-DE", {
+          style: "currency",
+          currency: "EUR",
+        })}${cost.notes ? ` - ${cost.notes}` : ""}`,
+        vehicle: cost.registration || "Fleet",
+        date: cost.date || idToDate(cost.id),
+        icon: "\u20ac",
       });
     });
 
@@ -64,7 +89,7 @@ function History() {
       const bDate = b.date ? new Date(b.date).getTime() : 0;
       return bDate - aDate;
     });
-  }, [vehicles, documents]);
+  }, [vehicles, documents, costs]);
 
   const filteredEvents = events.filter((event) => {
     const query = search.trim().toLowerCase();
@@ -111,7 +136,7 @@ function History() {
         />
 
         <div className="history-filters">
-          {["All", "Vehicle", "Service", "Document"].map((type) => (
+          {["All", "Vehicle", "Service", "Document", "Cost"].map((type) => (
             <button
               key={type}
               type="button"

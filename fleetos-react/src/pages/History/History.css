@@ -1,4 +1,4 @@
-﻿.history-page {
+.history-page {
   padding: 28px;
   color: #f5f7fb;
 }
@@ -190,6 +190,10 @@
 
 .history-type.document {
   color: #b5a0ff;
+}
+
+.history-type.cost {
+  color: #f2c14e;
 }
 
 .history-type.vehicle {
