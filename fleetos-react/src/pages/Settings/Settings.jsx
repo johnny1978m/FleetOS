@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useFleet } from "../../context/useFleet";
+import "./Settings.css";
 
-const savedSettings = JSON.parse(
-  localStorage.getItem("fleetos-settings") || "null",
-);
+
 
 function Settings() {
+  const { settings: savedSettings, updateSettings } = useFleet();
   const [companyName, setCompanyName] = useState(
     savedSettings?.companyName || "FleetOS",
   );
@@ -37,7 +38,7 @@ function Settings() {
       documentAlerts,
     };
 
-    localStorage.setItem("fleetos-settings", JSON.stringify(settings));
+    updateSettings(settings);
 
     setSaved(true);
 
@@ -55,7 +56,7 @@ function Settings() {
         </div>
       </div>
 
-      <form onSubmit={handleSave}>
+      <form onSubmit={handleSave} className="settings-form">
         <section className="dashboard-section">
           <div className="section-header">
             <div>
@@ -76,10 +77,11 @@ function Settings() {
             </div>
 
             <div className="vehicles-form-field">
-              <label htmlFor="language">Language</label>
+              <label htmlFor="language">Language (coming soon)</label>
               <select
                 id="language"
                 value={language}
+                disabled
                 onChange={(event) => setLanguage(event.target.value)}
               >
                 <option>English</option>
@@ -89,10 +91,11 @@ function Settings() {
             </div>
 
             <div className="vehicles-form-field">
-              <label htmlFor="distanceUnit">Distance Unit</label>
+              <label htmlFor="distanceUnit">Distance Unit (coming soon)</label>
               <select
                 id="distanceUnit"
                 value={distanceUnit}
+                disabled
                 onChange={(event) => setDistanceUnit(event.target.value)}
               >
                 <option>Kilometers</option>
@@ -115,13 +118,14 @@ function Settings() {
               <input
                 type="checkbox"
                 checked={notifications}
+                disabled
                 onChange={(event) =>
                   setNotifications(event.target.checked)
                 }
               />
               <span>
                 <strong>Notifications</strong>
-                <small>Enable FleetOS notifications</small>
+                <small>Enable FleetOS notifications (coming soon)</small>
               </span>
             </label>
 

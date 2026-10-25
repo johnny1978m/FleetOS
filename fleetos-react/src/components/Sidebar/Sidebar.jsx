@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useFleet } from "../../context/useFleet";
 import "./Sidebar.css";
 
 const navigation = [
@@ -14,6 +15,8 @@ const navigation = [
 ];
 
 function Sidebar() {
+  const { settings } = useFleet();
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -41,7 +44,7 @@ function Sidebar() {
         <span className="sidebar-status-dot"></span>
         <div>
           <strong>System Online</strong>
-          <small>FleetOS Control Center</small>
+          <small>{`${settings.companyName || "FleetOS"} Control Center`}</small>
         </div>
       </div>
 

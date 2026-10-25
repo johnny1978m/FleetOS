@@ -1,0 +1,49 @@
+.settings-form .vehicles-form-grid,
+.settings-form .settings-options {
+  padding: 20px;
+}
+
+.settings-options {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #18364b;
+  border-radius: 9px;
+  background: #0b1a27;
+  cursor: pointer;
+}
+
+.settings-option input {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  accent-color: #1caeea;
+}
+
+.settings-option span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-option strong {
+  color: #f4f8fb;
+  font-size: 14px;
+}
+
+.settings-option small {
+  color: #71899b;
+  font-size: 12px;
+}
+
+.settings-option:has(input:disabled),
+.settings-form select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

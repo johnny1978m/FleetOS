@@ -117,6 +117,15 @@ const initialDocuments = [
   },
 ];
 
+const defaultSettings = {
+  companyName: "FleetOS",
+  language: "English",
+  distanceUnit: "Kilometers",
+  notifications: true,
+  serviceAlerts: true,
+  documentAlerts: true,
+};
+
 function loadData(key, fallback) {
   try {
     const saved = localStorage.getItem(key);
@@ -149,6 +158,15 @@ export function FleetProvider({ children }) {
   }, [documents]);
 
   const [costs, setCosts] = useState(() => loadData("fleetos-costs", []));
+
+  const [settings, setSettings] = useState(() => ({
+    ...defaultSettings,
+    ...loadData("fleetos-settings", {}),
+  }));
+
+  useEffect(() => {
+    localStorage.setItem("fleetos-settings", JSON.stringify(settings));
+  }, [settings]);
 
   useEffect(() => {
     localStorage.setItem("fleetos-costs", JSON.stringify(costs));
@@ -197,6 +215,10 @@ export function FleetProvider({ children }) {
     );
   };
 
+  const updateSettings = (data) => {
+    setSettings((current) => ({ ...current, ...data }));
+  };
+
   const deleteCost = (id) => {
     setCosts((current) => current.filter((cost) => cost.id !== id));
   };
@@ -225,6 +247,8 @@ export function FleetProvider({ children }) {
         deleteDocument,
         costs,
         addCost,
+        settings,
+        updateSettings,
         updateCost,
         deleteCost,
       }}
