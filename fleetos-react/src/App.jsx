@@ -8,6 +8,7 @@ import Vehicles from "./pages/Vehicles/Vehicles";
 import VehicleDetails from "./pages/Vehicles/VehicleDetails";
 import Service from "./pages/Service/Service";
 import Documents from "./pages/Documents/Documents";
+import Costs from "./pages/Costs/Costs";
 import Alerts from "./pages/Alerts/Alerts";
 import History from "./pages/History/History";
 import Analytics from "./pages/Analytics/Analytics";
@@ -24,6 +25,7 @@ function App() {
             <Route path="/vehicles/:id" element={<VehicleDetails />} />
             <Route path="/service" element={<Service />} />
             <Route path="/documents" element={<Documents />} />
+            <Route path="/costs" element={<Costs />} />
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/history" element={<History />} />
             <Route path="/analytics" element={<Analytics />} />

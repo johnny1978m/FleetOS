@@ -1,4 +1,4 @@
-﻿import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 const navigation = [
@@ -6,6 +6,7 @@ const navigation = [
   { to: "/vehicles", label: "Vehicles", icon: "▣" },
   { to: "/service", label: "Service", icon: "⚙" },
   { to: "/documents", label: "Documents", icon: "▤" },
+  { to: "/costs", label: "Costs", icon: "\u20ac" },
   { to: "/alerts", label: "Alerts", icon: "⚠" },
   { to: "/history", label: "History", icon: "◷" },
   { to: "/analytics", label: "Analytics", icon: "▥" },

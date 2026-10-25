@@ -148,6 +148,12 @@ export function FleetProvider({ children }) {
     localStorage.setItem("fleetos-documents", JSON.stringify(documents));
   }, [documents]);
 
+  const [costs, setCosts] = useState(() => loadData("fleetos-costs", []));
+
+  useEffect(() => {
+    localStorage.setItem("fleetos-costs", JSON.stringify(costs));
+  }, [costs]);
+
   const addVehicle = (vehicle) => {
     setVehicles((current) => [
       ...current,
@@ -181,6 +187,20 @@ export function FleetProvider({ children }) {
     ]);
   };
 
+  const addCost = (cost) => {
+    setCosts((current) => [...current, { id: Date.now(), ...cost }]);
+  };
+
+  const updateCost = (id, costData) => {
+    setCosts((current) =>
+      current.map((cost) => (cost.id === id ? { ...cost, ...costData } : cost)),
+    );
+  };
+
+  const deleteCost = (id) => {
+    setCosts((current) => current.filter((cost) => cost.id !== id));
+  };
+
   const updateDocument = (id, documentData) => {
     setDocuments((current) =>
       current.map((document) =>
@@ -203,6 +223,10 @@ export function FleetProvider({ children }) {
         addDocument,
         updateDocument,
         deleteDocument,
+        costs,
+        addCost,
+        updateCost,
+        deleteCost,
       }}
     >
       {children}

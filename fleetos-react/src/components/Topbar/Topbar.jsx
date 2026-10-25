@@ -22,6 +22,10 @@ const pageInfo = {
     title: "Analytics",
     subtitle: "Fleet performance and maintenance analytics",
   },
+  "/costs": {
+    title: "Costs",
+    subtitle: "Fleet expenses and cost tracking",
+  },
   "/alerts": {
     title: "Alerts",
     subtitle: "Maintenance and document alerts",
