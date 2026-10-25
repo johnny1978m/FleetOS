@@ -31,14 +31,14 @@ function formatDate(value) {
 }
 
 function Alerts() {
-  const { vehicles, documents } = useFleet();
+  const { vehicles, documents, settings } = useFleet();
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 
   const alerts = useMemo(() => {
     const items = [];
 
-    vehicles.forEach((vehicle) => {
+    (settings.serviceAlerts ? vehicles : []).forEach((vehicle) => {
       const currentKm = Number(vehicle.km || 0);
       const serviceKm = Number(vehicle.serviceKm || 0);
       const oilKm = Number(vehicle.oilKm || 0);
@@ -84,7 +84,7 @@ function Alerts() {
       }
     });
 
-    documents.forEach((document) => {
+    (settings.documentAlerts ? documents : []).forEach((document) => {
       const status = getDocumentStatus(document.expiry);
 
       if (status !== "Valid") {
@@ -104,7 +104,7 @@ function Alerts() {
     });
 
     return items;
-  }, [vehicles, documents]);
+  }, [vehicles, documents, settings.serviceAlerts, settings.documentAlerts]);
 
   const filteredAlerts = alerts.filter((alert) => {
     const value = search.toLowerCase().trim();
@@ -176,7 +176,7 @@ function Alerts() {
           <div>
             <div className="panel-kicker">ALERT CONTROL</div>
             <h2>Active Alerts</h2>
-            <p>Live alerts calculated from current fleet data</p>
+            <p>{settings.serviceAlerts && settings.documentAlerts ? "Live alerts calculated from current fleet data" : "Some alert types are turned off in Settings"}</p>
           </div>
         </div>
 
