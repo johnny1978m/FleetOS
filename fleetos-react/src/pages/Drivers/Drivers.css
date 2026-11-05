@@ -1,0 +1,50 @@
+.drivers-classes-field {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drivers-classes-field > span {
+  color: #6f8799;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.drivers-classes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.documents-form .drivers-class-option {
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: #0d1d2b;
+  cursor: pointer;
+}
+
+.documents-form .drivers-class-option span {
+  color: #dceaf3;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.documents-form .drivers-class-option input {
+  width: 15px;
+  height: 15px;
+  min-height: 0;
+  padding: 0;
+  accent-color: #1caeea;
+}
+
+.documents-form .drivers-class-option:has(input:checked) {
+  border-color: #278dbb;
+  background: #0e2434;
+}

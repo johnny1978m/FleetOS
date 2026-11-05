@@ -159,6 +159,14 @@ export function FleetProvider({ children }) {
 
   const [costs, setCosts] = useState(() => loadData("fleetos-costs", []));
 
+  const [drivers, setDrivers] = useState(() =>
+    loadData("fleetos-drivers", []),
+  );
+
+  useEffect(() => {
+    localStorage.setItem("fleetos-drivers", JSON.stringify(drivers));
+  }, [drivers]);
+
   const [settings, setSettings] = useState(() => ({
     ...defaultSettings,
     ...loadData("fleetos-settings", {}),
@@ -219,6 +227,22 @@ export function FleetProvider({ children }) {
     setSettings((current) => ({ ...current, ...data }));
   };
 
+  const addDriver = (driver) => {
+    setDrivers((current) => [...current, { id: Date.now(), ...driver }]);
+  };
+
+  const updateDriver = (id, driverData) => {
+    setDrivers((current) =>
+      current.map((driver) =>
+        driver.id === id ? { ...driver, ...driverData } : driver,
+      ),
+    );
+  };
+
+  const deleteDriver = (id) => {
+    setDrivers((current) => current.filter((driver) => driver.id !== id));
+  };
+
   const deleteCost = (id) => {
     setCosts((current) => current.filter((cost) => cost.id !== id));
   };
@@ -247,6 +271,10 @@ export function FleetProvider({ children }) {
         deleteDocument,
         costs,
         addCost,
+        drivers,
+        addDriver,
+        updateDriver,
+        deleteDriver,
         settings,
         updateSettings,
         updateCost,
