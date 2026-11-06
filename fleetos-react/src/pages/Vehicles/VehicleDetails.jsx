@@ -81,6 +81,10 @@ function remainingText(currentKm, targetKm) {
   return `${remaining.toLocaleString("de-DE")} km remaining`;
 }
 
+function recordsLabel(count) {
+  return `${count} ${count === 1 ? "record" : "records"}`;
+}
+
 function formatMoney(value) {
   return Number(value || 0).toLocaleString("de-DE", {
     style: "currency",
@@ -264,7 +268,7 @@ function VehicleDetails() {
           <span>Open Incidents</span>
           <strong>{openIncidents.length}</strong>
           <small>
-            {`${vehicleIncidents.length} records, ${formatMoney(incidentsTotal)}`}
+            {`${recordsLabel(vehicleIncidents.length)}, ${formatMoney(incidentsTotal)}`}
           </small>
         </div>
       </section>
@@ -350,7 +354,7 @@ function VehicleDetails() {
       <section className="vprofile-card vprofile-costs-card">
         <div className="vprofile-card-header">
           <h2>Incidents</h2>
-          <span>{vehicleIncidents.length} records</span>
+          <span>{recordsLabel(vehicleIncidents.length)}</span>
         </div>
 
         {vehicleIncidents.length > 0 ? (
@@ -379,7 +383,7 @@ function VehicleDetails() {
       <section className="vprofile-card vprofile-costs-card">
         <div className="vprofile-card-header">
           <h2>Costs</h2>
-          <span>{vehicleCosts.length} records</span>
+          <span>{recordsLabel(vehicleCosts.length)}</span>
         </div>
 
         {vehicleCosts.length > 0 ? (
@@ -408,7 +412,7 @@ function VehicleDetails() {
       <section className="vprofile-card">
         <div className="vprofile-card-header">
           <h2>Service History</h2>
-          <span>{history.length} records</span>
+          <span>{recordsLabel(history.length)}</span>
         </div>
 
         {history.length > 0 ? (

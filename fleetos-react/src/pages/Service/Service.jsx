@@ -512,7 +512,7 @@ function Service() {
             <div className="service-history-list">
               <div className="service-history-list-header">
                 <h3>Recorded Work</h3>
-                <span>{visibleHistory.length} records</span>
+                <span>{visibleHistory.length === 1 ? "1 record" : `${visibleHistory.length} records`}</span>
               </div>
 
               {visibleHistory.length > 0 ? (
