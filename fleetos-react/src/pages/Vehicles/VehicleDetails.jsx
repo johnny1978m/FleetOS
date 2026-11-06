@@ -100,7 +100,7 @@ function StatusBadge({ status, label }) {
 function VehicleDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { vehicles, documents, costs } = useFleet();
+  const { vehicles, documents, costs, incidents } = useFleet();
 
   const history = useMemo(() => {
     return loadHistory()
@@ -155,6 +155,16 @@ function VehicleDetails() {
     .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
   const totalCosts = vehicleCosts.reduce(
     (sum, cost) => sum + Number(cost.amount || 0),
+    0,
+  );
+  const vehicleIncidents = (incidents || [])
+    .filter((incident) => incident.registration === vehicle.registration)
+    .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+  const openIncidents = vehicleIncidents.filter(
+    (incident) => incident.status !== "Resolved",
+  );
+  const incidentsTotal = vehicleIncidents.reduce(
+    (sum, incident) => sum + Number(incident.amount || 0),
     0,
   );
   const thisYear = String(new Date().getFullYear());
@@ -243,12 +253,27 @@ function VehicleDetails() {
           <strong>{formatMoney(totalCosts)}</strong>
           <small>{`${formatMoney(yearCosts)} in ${thisYear}`}</small>
         </div>
+
+        <div
+          className={`vprofile-kpi ${
+            openIncidents.length > 0
+              ? "vprofile-kpi-attention"
+              : "vprofile-kpi-good"
+          }`}
+        >
+          <span>Open Incidents</span>
+          <strong>{openIncidents.length}</strong>
+          <small>
+            {`${vehicleIncidents.length} records, ${formatMoney(incidentsTotal)}`}
+          </small>
+        </div>
       </section>
 
       <nav className="vprofile-quicklinks">
         <Link to="/service">Service</Link>
         <Link to="/documents">Documents</Link>
         <Link to="/costs">Costs</Link>
+        <Link to="/incidents">Incidents</Link>
         <Link to="/history">History</Link>
       </nav>
 
@@ -321,6 +346,35 @@ function VehicleDetails() {
           )}
         </section>
       </div>
+
+      <section className="vprofile-card vprofile-costs-card">
+        <div className="vprofile-card-header">
+          <h2>Incidents</h2>
+          <span>{vehicleIncidents.length} records</span>
+        </div>
+
+        {vehicleIncidents.length > 0 ? (
+          <ul className="vprofile-list">
+            {vehicleIncidents.slice(0, 5).map((incident) => (
+              <li key={incident.id} className="vprofile-list-item">
+                <div>
+                  <strong>{`${incident.type} - ${incident.status}`}</strong>
+                  <span>{incident.notes || "No notes"}</span>
+                </div>
+
+                <div className="vprofile-list-meta">
+                  <strong>{formatMoney(incident.amount)}</strong>
+                  <span>{formatDate(incident.date)}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="vprofile-empty">
+            No damages or fines recorded for this vehicle.
+          </p>
+        )}
+      </section>
 
       <section className="vprofile-card vprofile-costs-card">
         <div className="vprofile-card-header">
