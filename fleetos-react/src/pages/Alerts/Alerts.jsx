@@ -31,7 +31,7 @@ function formatDate(value) {
 }
 
 function Alerts() {
-  const { vehicles, documents, drivers, settings } = useFleet();
+  const { vehicles, documents, drivers, incidents, settings } = useFleet();
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 
@@ -124,11 +124,39 @@ function Alerts() {
       }
     });
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    (incidents || []).forEach((incident) => {
+      if (incident.status === "Resolved") return;
+
+      const ageDays = incident.date
+        ? Math.floor(
+            (today - new Date(`${incident.date}T00:00:00`)) / 86400000,
+          )
+        : 0;
+      const amount = Number(incident.amount || 0).toLocaleString("de-DE", {
+        style: "currency",
+        currency: "EUR",
+      });
+
+      items.push({
+        id: `incident-${incident.id}`,
+        priority: ageDays > 30 ? "Critical" : "Attention",
+        category: "Incident",
+        title: `${incident.registration} - ${incident.type}`,
+        description: `${incident.type} from ${formatDate(incident.date)} is still ${String(incident.status).toLowerCase()} (${amount}).`,
+        vehicle: incident.vehicle || "Vehicle",
+        registration: incident.registration,
+      });
+    });
+
     return items;
   }, [
     vehicles,
     documents,
     drivers,
+    incidents,
     settings.serviceAlerts,
     settings.documentAlerts,
   ]);
