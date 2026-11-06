@@ -22,6 +22,10 @@ const pageInfo = {
     title: "Analytics",
     subtitle: "Fleet performance and maintenance analytics",
   },
+  "/incidents": {
+    title: "Incidents",
+    subtitle: "Damages and fines",
+  },
   "/drivers": {
     title: "Drivers",
     subtitle: "Driver records and licence control",
