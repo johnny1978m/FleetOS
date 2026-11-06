@@ -15,7 +15,7 @@ function idToDate(id) {
 }
 
 function History() {
-  const { vehicles, documents, costs } = useFleet();
+  const { vehicles, documents, costs, incidents } = useFleet();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -84,12 +84,29 @@ function History() {
       });
     });
 
+    (incidents || []).forEach((incident, index) => {
+      const amount = Number(incident.amount || 0).toLocaleString("de-DE", {
+        style: "currency",
+        currency: "EUR",
+      });
+
+      result.push({
+        id: `incident-${incident.id || index}`,
+        type: "Incident",
+        title: `${incident.type} - ${incident.status}`,
+        description: `${amount}${incident.notes ? ` - ${incident.notes}` : ""}`,
+        vehicle: incident.registration || "Fleet",
+        date: incident.date || idToDate(incident.id),
+        icon: "\u2691",
+      });
+    });
+
     return result.sort((a, b) => {
       const aDate = a.date ? new Date(a.date).getTime() : 0;
       const bDate = b.date ? new Date(b.date).getTime() : 0;
       return bDate - aDate;
     });
-  }, [vehicles, documents, costs]);
+  }, [vehicles, documents, costs, incidents]);
 
   const filteredEvents = events.filter((event) => {
     const query = search.trim().toLowerCase();
@@ -136,7 +153,7 @@ function History() {
         />
 
         <div className="history-filters">
-          {["All", "Vehicle", "Service", "Document", "Cost"].map((type) => (
+          {["All", "Vehicle", "Service", "Document", "Cost", "Incident"].map((type) => (
             <button
               key={type}
               type="button"

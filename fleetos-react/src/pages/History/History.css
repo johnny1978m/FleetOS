@@ -192,6 +192,10 @@
   color: #b5a0ff;
 }
 
+.history-type.incident {
+  color: #ff7a7a;
+}
+
 .history-type.cost {
   color: #f2c14e;
 }
