@@ -31,7 +31,7 @@ function formatDate(value) {
 }
 
 function Alerts() {
-  const { vehicles, documents, settings } = useFleet();
+  const { vehicles, documents, drivers, settings } = useFleet();
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 
@@ -103,8 +103,35 @@ function Alerts() {
       }
     });
 
+    (settings.documentAlerts ? drivers : []).forEach((driver) => {
+      const status = getDocumentStatus(driver.licenseExpiry);
+
+      if (status !== "Valid") {
+        items.push({
+          id: `driver-${driver.id}`,
+          priority: status === "Expired" ? "Critical" : "Attention",
+          category: "Driver",
+          title: `${driver.name} - Driving licence`,
+          description:
+            status === "Missing"
+              ? "Licence expiry date is missing."
+              : status === "Expired"
+                ? `Licence expired on ${formatDate(driver.licenseExpiry)}.`
+                : `Licence expires on ${formatDate(driver.licenseExpiry)}.`,
+          vehicle: "Driver",
+          registration: driver.registration || "no vehicle assigned",
+        });
+      }
+    });
+
     return items;
-  }, [vehicles, documents, settings.serviceAlerts, settings.documentAlerts]);
+  }, [
+    vehicles,
+    documents,
+    drivers,
+    settings.serviceAlerts,
+    settings.documentAlerts,
+  ]);
 
   const filteredAlerts = alerts.filter((alert) => {
     const value = search.toLowerCase().trim();
@@ -135,7 +162,7 @@ function Alerts() {
   ).length;
 
   const documentCount = alerts.filter(
-    (alert) => alert.category === "Document",
+    (alert) => alert.category === "Document" || alert.category === "Driver",
   ).length;
 
   return (
@@ -205,7 +232,7 @@ function Alerts() {
               className={`alert-card alert-card-${alert.priority.toLowerCase()}`}
             >
               <div className="alert-card-icon">
-                {alert.category === "Document" ? "D" : "!"}
+                {alert.category === "Document" || alert.category === "Driver" ? "D" : "!"}
               </div>
 
               <div className="alert-card-content">
