@@ -16,11 +16,11 @@ const navigation = [
   { to: "/settings", label: "Settings", icon: "◉" },
 ];
 
-function Sidebar() {
+function Sidebar({ open = false, onClose = () => {} }) {
   const { settings } = useFleet();
 
   return (
-    <aside className="sidebar">
+    <aside className={open ? "sidebar open" : "sidebar"}>
       <div className="sidebar-logo">
         <h1>FleetOS</h1>
         <span>Fleet Management</span>
@@ -35,6 +35,7 @@ function Sidebar() {
             to={item.to}
             end={item.to === "/"}
             className="sidebar-link"
+            onClick={onClose}
           >
             <span className="sidebar-link-icon">{item.icon}</span>
             <span className="sidebar-link-label">{item.label}</span>

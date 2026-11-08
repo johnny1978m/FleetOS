@@ -53,7 +53,7 @@ const pageInfo = {
   },
 };
 
-function Topbar() {
+function Topbar({ onMenu }) {
   const location = useLocation();
   const { user, logout } = useAuth();
   const path = location.pathname.startsWith("/vehicles/")
@@ -63,6 +63,7 @@ function Topbar() {
 
   return (
     <header className="topbar">
+      <button type="button" className="topbar-menu" onClick={onMenu} aria-label="Open menu">{"\u2630"}</button>
       <div>
         <h2>{currentPage.title}</h2>
         <p>{currentPage.subtitle}</p>

@@ -1,4 +1,4 @@
-﻿.layout {
+.layout {
   min-height: 100vh;
   background: #07111c;
   color: #e8f1f8;
@@ -16,14 +16,14 @@
   background: #07111c;
 }
 
-@media (max-width: 800px) {
+@media (min-width: 769px) and (max-width: 800px) {
   .layout-main {
     margin-left: 190px;
   }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 768px) {
   .layout-main {
-    margin-left: 70px;
+    margin-left: 0;
   }
 }
