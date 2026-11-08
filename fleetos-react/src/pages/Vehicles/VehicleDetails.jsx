@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useFleet } from "../../context/useFleet";
 import "./VehicleDetails.css";
@@ -104,7 +104,21 @@ function StatusBadge({ status, label }) {
 function VehicleDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { vehicles, documents, costs, incidents } = useFleet();
+  const {
+    vehicles,
+    documents,
+    costs,
+    incidents,
+    odometer,
+    addOdometerReading,
+    deleteOdometerReading,
+  } = useFleet();
+  const [readingForm, setReadingForm] = useState({
+    date: "",
+    km: "",
+    notes: "",
+  });
+  const [readingError, setReadingError] = useState("");
 
   const history = useMemo(() => {
     return loadHistory()
@@ -164,6 +178,32 @@ function VehicleDetails() {
   const vehicleIncidents = (incidents || [])
     .filter((incident) => incident.registration === vehicle.registration)
     .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+  const vehicleReadings = (odometer || [])
+    .filter((reading) => String(reading.vehicleId) === String(vehicle.id))
+    .sort(
+      (a, b) =>
+        String(b.date || "").localeCompare(String(a.date || "")) ||
+        Number(b.km) - Number(a.km),
+    );
+
+  const handleReadingChange = (event) => {
+    const { name, value } = event.target;
+    setReadingForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleReadingSubmit = (event) => {
+    event.preventDefault();
+    const result = addOdometerReading(vehicle.id, readingForm);
+
+    if (!result.ok) {
+      setReadingError(result.error);
+      return;
+    }
+
+    setReadingError("");
+    setReadingForm({ date: "", km: "", notes: "" });
+  };
+
   const openIncidents = vehicleIncidents.filter(
     (incident) => incident.status !== "Resolved",
   );
@@ -406,6 +446,42 @@ function VehicleDetails() {
           <p className="vprofile-empty">
             No costs recorded yet. Add them from the Costs page.
           </p>
+        )}
+      </section>
+
+      <section className="vprofile-card vprofile-costs-card">
+        <div className="vprofile-card-header">
+          <h2>Odometer Log</h2>
+          <span>{recordsLabel(vehicleReadings.length)}</span>
+        </div>
+
+        <form className="vprofile-odo-form" onSubmit={handleReadingSubmit}>
+          <input type="date" name="date" value={readingForm.date} onChange={handleReadingChange} />
+          <input type="number" name="km" min="0" placeholder="Kilometres" value={readingForm.km} onChange={handleReadingChange} />
+          <input type="text" name="notes" placeholder="Notes (optional)" value={readingForm.notes} onChange={handleReadingChange} />
+          <button type="submit" className="documents-export-button">Add reading</button>
+        </form>
+
+        {readingError && <p className="vprofile-empty">{readingError}</p>}
+
+        {vehicleReadings.length > 0 ? (
+          <ul className="vprofile-list">
+            {vehicleReadings.slice(0, 8).map((reading) => (
+              <li key={reading.id} className="vprofile-list-item">
+                <div>
+                  <strong>{formatKm(reading.km)}</strong>
+                  <span>{reading.notes || "No notes"}</span>
+                </div>
+
+                <div className="vprofile-list-meta">
+                  <span>{formatDate(reading.date)}</span>
+                  <button type="button" className="documents-export-button" onClick={() => deleteOdometerReading(reading.id)}>Delete</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="vprofile-empty">No readings recorded yet.</p>
         )}
       </section>
 

@@ -329,3 +329,28 @@
     align-items: flex-start;
   }
 }
+
+.vprofile-odo-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.vprofile-odo-form input {
+  flex: 1 1 140px;
+  padding: 8px 10px;
+  border: 1px solid #23455a;
+  border-radius: 6px;
+  background: #0b1a27;
+  color: #d7e6ef;
+  font-size: 13px;
+}
+
+.vprofile-odo-form .documents-export-button {
+  margin-top: 0;
+}
+
+.vprofile-list-meta .documents-export-button {
+  margin-top: 6px;
+}
