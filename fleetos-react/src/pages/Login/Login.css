@@ -53,3 +53,21 @@
   color: #ff7b8f;
   font-size: 13px;
 }
+
+.login-card .login-link {
+  padding: 4px;
+  background: none;
+  color: #83a0b1;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.login-card .login-link:hover { color: #39baf3; }
+
+.login-info {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #0f2a22;
+  color: #6fe3b0;
+  font-size: 13px;
+}

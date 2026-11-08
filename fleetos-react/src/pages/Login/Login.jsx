@@ -10,11 +10,29 @@ const MESSAGES = {
 };
 
 function Login() {
-  const { login } = useAuth();
+  const { login, resetPassword } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [info, setInfo] = useState("");
+
+  const handleReset = async () => {
+    setError("");
+    setInfo("");
+
+    if (!email.trim()) {
+      setError("Enter your email above first.");
+      return;
+    }
+
+    try {
+      await resetPassword(email.trim());
+      setInfo("If this email has an account, a reset link was sent. Check your inbox and spam.");
+    } catch (err) {
+      setError(MESSAGES[err.code] || "Could not send the email. Try again.");
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -38,7 +56,9 @@ function Login() {
         <input type="email" placeholder="Email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input type="password" placeholder="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         {error && <div className="login-error">{error}</div>}
+        {info && <div className="login-info">{info}</div>}
         <button type="submit" disabled={busy}>{busy ? "Signing in..." : "Sign in"}</button>
+        <button type="button" className="login-link" onClick={handleReset}>Forgot password?</button>
       </form>
     </div>
   );
