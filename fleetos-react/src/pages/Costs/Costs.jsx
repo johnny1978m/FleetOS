@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
+import { exportCsv, formatCsvNumber } from "../../utils/exportCsv";
 import "../Documents/Documents.css";
 
 const CATEGORIES = [
@@ -26,6 +27,15 @@ function formatMoney(value) {
     currency: "EUR",
   });
 }
+
+const COST_COLUMNS = [
+  { label: "Date", value: (item) => item.date },
+  { label: "Registration", value: (item) => item.registration },
+  { label: "Vehicle", value: (item) => item.vehicle },
+  { label: "Category", value: (item) => item.category },
+  { label: "Amount (EUR)", value: (item) => formatCsvNumber(item.amount) },
+  { label: "Notes", value: (item) => item.notes },
+];
 
 function formatDate(value) {
   if (!value) return "-";
@@ -173,6 +183,13 @@ function Costs() {
           <div className="panel-kicker">FLEETOS FINANCE</div>
           <h1>Costs</h1>
           <p>Fleet expenses by vehicle and category</p>
+          <button
+            type="button"
+            className="documents-export-button"
+            onClick={() => exportCsv("costs", COST_COLUMNS, filteredCosts)}
+          >
+            Export CSV
+          </button>
         </div>
 
         <button

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
+import { exportCsv } from "../../utils/exportCsv";
 import "../Documents/Documents.css";
 import "./Drivers.css";
 
@@ -35,6 +36,19 @@ function getLicenseStatus(expiry) {
   if (diffDays <= 30) return "Attention";
   return "Valid";
 }
+
+const DRIVER_COLUMNS = [
+  { label: "Name", value: (item) => item.name },
+  { label: "Phone", value: (item) => item.phone },
+  {
+    label: "Licence classes",
+    value: (item) => getDriverClasses(item).join(", "),
+  },
+  { label: "Licence number", value: (item) => item.licenseNumber },
+  { label: "Licence expiry", value: (item) => item.licenseExpiry },
+  { label: "Vehicle", value: (item) => item.registration },
+  { label: "Notes", value: (item) => item.notes },
+];
 
 function formatDate(value) {
   if (!value) return "-";
@@ -198,6 +212,13 @@ function Drivers() {
           <div className="panel-kicker">FLEETOS COMPLIANCE</div>
           <h1>Drivers</h1>
           <p>Driver records and driving licence control</p>
+          <button
+            type="button"
+            className="documents-export-button"
+            onClick={() => exportCsv("drivers", DRIVER_COLUMNS, filteredDrivers)}
+          >
+            Export CSV
+          </button>
         </div>
 
         <button

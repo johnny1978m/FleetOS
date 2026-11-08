@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
+import { exportCsv } from "../../utils/exportCsv";
 import "./Documents.css";
 
 function getDocumentStatus(expiry) {
@@ -15,6 +16,13 @@ function getDocumentStatus(expiry) {
   if (diffDays <= 30) return "Attention";
   return "Valid";
 }
+
+const DOCUMENT_COLUMNS = [
+  { label: "Registration", value: (item) => item.registration },
+  { label: "Vehicle", value: (item) => item.vehicle },
+  { label: "Document", value: (item) => item.document },
+  { label: "Expiry", value: (item) => item.expiry },
+];
 
 function formatDate(value) {
   if (!value) return "-";
@@ -160,6 +168,13 @@ function Documents() {
           <div className="panel-kicker">FLEETOS COMPLIANCE</div>
           <h1>Documents</h1>
           <p>Vehicle documents, expiry dates and compliance status</p>
+          <button
+            type="button"
+            className="documents-export-button"
+            onClick={() => exportCsv("documents", DOCUMENT_COLUMNS, filteredDocuments)}
+          >
+            Export CSV
+          </button>
         </div>
 
         <button

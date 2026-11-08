@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
+import { exportCsv, formatCsvNumber } from "../../utils/exportCsv";
 import "../Documents/Documents.css";
 
 const TYPES = ["Damage", "Fine"];
@@ -19,6 +20,17 @@ function formatMoney(value) {
     currency: "EUR",
   });
 }
+
+const INCIDENT_COLUMNS = [
+  { label: "Date", value: (item) => item.date },
+  { label: "Type", value: (item) => item.type },
+  { label: "Registration", value: (item) => item.registration },
+  { label: "Vehicle", value: (item) => item.vehicle },
+  { label: "Driver", value: (item) => item.driver },
+  { label: "Amount (EUR)", value: (item) => formatCsvNumber(item.amount) },
+  { label: "Status", value: (item) => item.status },
+  { label: "Notes", value: (item) => item.notes },
+];
 
 function formatDate(value) {
   if (!value) return "-";
@@ -177,6 +189,13 @@ function Incidents() {
           <div className="panel-kicker">FLEETOS COMPLIANCE</div>
           <h1>Incidents</h1>
           <p>Damages and fines recorded for fleet vehicles</p>
+          <button
+            type="button"
+            className="documents-export-button"
+            onClick={() => exportCsv("incidents", INCIDENT_COLUMNS, filteredIncidents)}
+          >
+            Export CSV
+          </button>
         </div>
 
         <button

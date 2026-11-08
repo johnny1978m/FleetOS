@@ -1,4 +1,4 @@
-﻿* {
+* {
   box-sizing: border-box;
 }
 
@@ -381,4 +381,21 @@
   border-color: #ef535e;
   background: rgba(239, 83, 94, 0.1);
   color: #ef535e;
+}
+
+.documents-export-button {
+  margin-top: 12px;
+  padding: 7px 14px;
+  border: 1px solid #23455a;
+  border-radius: 6px;
+  background: #0b1a27;
+  color: #83a0b1;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.documents-export-button:hover {
+  border-color: #278dbb;
+  color: #39baf3;
 }
