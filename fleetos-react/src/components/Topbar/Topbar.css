@@ -1,4 +1,4 @@
-﻿.topbar {
+.topbar {
   height: 64px;
   box-sizing: border-box;
   background: #091521;
@@ -66,4 +66,21 @@
   .user-name {
     display: none;
   }
+}
+
+.topbar-logout {
+  margin-left: 12px;
+  padding: 7px 14px;
+  border: 1px solid #23455a;
+  border-radius: 6px;
+  background: #0b1a27;
+  color: #83a0b1;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.topbar-logout:hover {
+  border-color: #278dbb;
+  color: #39baf3;
 }

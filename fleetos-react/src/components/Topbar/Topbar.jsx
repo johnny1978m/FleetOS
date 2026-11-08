@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import { useAuth } from "../../context/useAuth";
 import "./Topbar.css";
 
 const pageInfo = {
@@ -54,6 +55,7 @@ const pageInfo = {
 
 function Topbar() {
   const location = useLocation();
+  const { user, logout } = useAuth();
   const path = location.pathname.startsWith("/vehicles/")
     ? "/vehicles/profile"
     : location.pathname;
@@ -67,8 +69,13 @@ function Topbar() {
       </div>
 
       <div className="topbar-user">
-        <span className="user-name">Admin</span>
-        <div className="user-avatar">A</div>
+        <span className="user-name">{user?.email || "Admin"}</span>
+        <div className="user-avatar">
+          {(user?.email || "A").charAt(0).toUpperCase()}
+        </div>
+        <button type="button" className="topbar-logout" onClick={logout}>
+          Sign out
+        </button>
       </div>
     </header>
   );
