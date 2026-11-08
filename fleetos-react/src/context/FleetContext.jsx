@@ -175,6 +175,14 @@ export function FleetProvider({ children }) {
     localStorage.setItem("fleetos-drivers", JSON.stringify(drivers));
   }, [drivers]);
 
+  const [odometer, setOdometer] = useState(() =>
+    loadData("fleetos-odometer", []),
+  );
+
+  useEffect(() => {
+    localStorage.setItem("fleetos-odometer", JSON.stringify(odometer));
+  }, [odometer]);
+
   const [settings, setSettings] = useState(() => ({
     ...defaultSettings,
     ...loadData("fleetos-settings", {}),
@@ -251,6 +259,47 @@ export function FleetProvider({ children }) {
     setDrivers((current) => current.filter((driver) => driver.id !== id));
   };
 
+  const addOdometerReading = (vehicleId, reading) => {
+    const vehicle = vehicles.find((item) => item.id === vehicleId);
+    const km = Number(reading.km);
+
+    if (!vehicle) return { ok: false, error: "Vehicle not found." };
+    if (!reading.date) return { ok: false, error: "Select a date." };
+    if (!Number.isFinite(km) || km < 0) {
+      return { ok: false, error: "Enter a valid kilometre value." };
+    }
+
+    const lastKm = Math.max(
+      Number(vehicle.km || 0),
+      ...odometer
+        .filter((item) => item.vehicleId === vehicleId)
+        .map((item) => Number(item.km)),
+    );
+
+    if (km < lastKm) {
+      return { ok: false, error: `Kilometres cannot be lower than ${lastKm}.` };
+    }
+
+    setOdometer((current) => [
+      ...current,
+      {
+        id: Date.now(),
+        vehicleId,
+        registration: vehicle.registration,
+        date: reading.date,
+        km,
+        notes: reading.notes || "",
+      },
+    ]);
+    updateVehicle(vehicleId, { km });
+
+    return { ok: true };
+  };
+
+  const deleteOdometerReading = (id) => {
+    setOdometer((current) => current.filter((item) => item.id !== id));
+  };
+
   const addIncident = (incident) => {
     setIncidents((current) => [...current, { id: Date.now(), ...incident }]);
   };
@@ -306,6 +355,9 @@ export function FleetProvider({ children }) {
         settings,
         updateSettings,
         updateCost,
+        odometer,
+        addOdometerReading,
+        deleteOdometerReading,
         deleteCost,
       }}
     >
