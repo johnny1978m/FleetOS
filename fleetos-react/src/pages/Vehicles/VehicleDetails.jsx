@@ -204,6 +204,28 @@ function VehicleDetails() {
     setReadingForm({ date: "", km: "", notes: "" });
   };
 
+  const costPerKm = (() => {
+    if (vehicleReadings.length < 2) return null;
+
+    const first = vehicleReadings[vehicleReadings.length - 1];
+    const last = vehicleReadings[0];
+    const distance = Number(last.km) - Number(first.km);
+
+    if (!(distance > 0)) return null;
+
+    const total = vehicleCosts
+      .filter((cost) => cost.date >= first.date && cost.date <= last.date)
+      .reduce((sum, cost) => sum + Number(cost.amount || 0), 0);
+
+    return {
+      perKm: total / distance,
+      total,
+      distance,
+      from: first.date,
+      to: last.date,
+    };
+  })();
+
   const openIncidents = vehicleIncidents.filter(
     (incident) => incident.status !== "Resolved",
   );
@@ -463,6 +485,12 @@ function VehicleDetails() {
         </form>
 
         {readingError && <p className="vprofile-empty">{readingError}</p>}
+
+        <p className="vprofile-empty">
+          {costPerKm
+            ? `Cost per km: ${costPerKm.perKm.toFixed(3).replace(".", ",")} EUR/km (${formatMoney(costPerKm.total)} over ${formatKm(costPerKm.distance)}, ${formatDate(costPerKm.from)} - ${formatDate(costPerKm.to)})`
+            : "Cost per km: not enough readings yet."}
+        </p>
 
         {vehicleReadings.length > 0 ? (
           <ul className="vprofile-list">
