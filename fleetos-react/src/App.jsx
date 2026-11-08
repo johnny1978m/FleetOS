@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { FleetProvider } from "./context/FleetContext";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
+import Login from "./pages/Login/Login";
 import Layout from "./components/Layout/Layout";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -16,9 +19,20 @@ import History from "./pages/History/History";
 import Analytics from "./pages/Analytics/Analytics";
 import Settings from "./pages/Settings/Settings";
 
+function AuthGate({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div className="auth-loading">Loading...</div>;
+  if (!user) return <Login />;
+
+  return children;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
+      <AuthGate>
       <FleetProvider>
         <Layout>
           <Routes>
@@ -37,6 +51,8 @@ function App() {
           </Routes>
         </Layout>
       </FleetProvider>
+      </AuthGate>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
