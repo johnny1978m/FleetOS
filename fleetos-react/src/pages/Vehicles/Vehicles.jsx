@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFleet } from "../../context/useFleet";
+import { exportCsv } from "../../utils/exportCsv";
 import "./Vehicles.css";
 
 const emptyVehicle = {
@@ -15,6 +16,19 @@ const emptyVehicle = {
   driver: "",
   observations: "",
 };
+
+const VEHICLE_COLUMNS = [
+  { label: "Registration", value: (item) => item.registration },
+  { label: "Brand", value: (item) => item.brand },
+  { label: "Model", value: (item) => item.model },
+  { label: "Year", value: (item) => item.year },
+  { label: "Current km", value: (item) => item.km },
+  { label: "Next service km", value: (item) => item.serviceKm },
+  { label: "Next oil km", value: (item) => item.oilKm },
+  { label: "Status", value: (item) => getEffectiveStatus(item) },
+  { label: "Driver", value: (item) => item.driver },
+  { label: "Observations", value: (item) => item.observations },
+];
 
 function getEffectiveStatus(vehicle) {
   const rank = { Good: 0, Attention: 1, Critical: 2 };
@@ -136,6 +150,13 @@ function Vehicles() {
         <div>
           <h1>Vehicles</h1>
           <p>Manage your fleet vehicles and maintenance information</p>
+          <button
+            type="button"
+            className="documents-export-button"
+            onClick={() => exportCsv("vehicles", VEHICLE_COLUMNS, filteredVehicles)}
+          >
+            Export CSV
+          </button>
         </div>
 
         <button
