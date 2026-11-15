@@ -20,10 +20,18 @@ import Analytics from "./pages/Analytics/Analytics";
 import Settings from "./pages/Settings/Settings";
 
 function AuthGate({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, error, logout } = useAuth();
 
   if (loading) return <div className="auth-loading">Loading...</div>;
   if (!user) return <Login />;
+  if (error) {
+    return (
+      <div className="auth-loading">
+        {error}{" "}
+        <button type="button" className="topbar-logout" onClick={logout}>Sign out</button>
+      </div>
+    );
+  }
 
   return children;
 }
