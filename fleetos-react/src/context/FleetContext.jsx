@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "./useAuth";
+import { useCollection } from "../data/useCollection";
 import { FleetContext } from "./FleetContextDefinition";
 
 const initialVehicles = [
@@ -141,6 +143,7 @@ function loadData(key, fallback) {
 }
 
 export function FleetProvider({ children }) {
+  const { companyId } = useAuth();
   const [vehicles, setVehicles] = useState(() =>
     loadData("fleetos-vehicles", initialVehicles),
   );
@@ -167,13 +170,10 @@ export function FleetProvider({ children }) {
     localStorage.setItem("fleetos-incidents", JSON.stringify(incidents));
   }, [incidents]);
 
-  const [drivers, setDrivers] = useState(() =>
-    loadData("fleetos-drivers", []),
+  const [drivers, saveDriver, removeDriver] = useCollection(
+    companyId,
+    "drivers",
   );
-
-  useEffect(() => {
-    localStorage.setItem("fleetos-drivers", JSON.stringify(drivers));
-  }, [drivers]);
 
   const [odometer, setOdometer] = useState(() =>
     loadData("fleetos-odometer", []),
@@ -244,19 +244,17 @@ export function FleetProvider({ children }) {
   };
 
   const addDriver = (driver) => {
-    setDrivers((current) => [...current, { id: Date.now(), ...driver }]);
+    saveDriver({ id: Date.now(), ...driver });
   };
 
   const updateDriver = (id, driverData) => {
-    setDrivers((current) =>
-      current.map((driver) =>
-        driver.id === id ? { ...driver, ...driverData } : driver,
-      ),
-    );
+    const existing = drivers.find((driver) => driver.id === id);
+
+    if (existing) saveDriver({ ...existing, ...driverData });
   };
 
   const deleteDriver = (id) => {
-    setDrivers((current) => current.filter((driver) => driver.id !== id));
+    removeDriver(id);
   };
 
   const addOdometerReading = (vehicleId, reading) => {
