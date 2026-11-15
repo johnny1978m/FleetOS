@@ -160,15 +160,12 @@ export function FleetProvider({ children }) {
     localStorage.setItem("fleetos-documents", JSON.stringify(documents));
   }, [documents]);
 
-  const [costs, setCosts] = useState(() => loadData("fleetos-costs", []));
+  const [costs, saveCost, removeCost] = useCollection(companyId, "costs");
 
-  const [incidents, setIncidents] = useState(() =>
-    loadData("fleetos-incidents", []),
+  const [incidents, saveIncident, removeIncident] = useCollection(
+    companyId,
+    "incidents",
   );
-
-  useEffect(() => {
-    localStorage.setItem("fleetos-incidents", JSON.stringify(incidents));
-  }, [incidents]);
 
   const [drivers, saveDriver, removeDriver] = useCollection(
     companyId,
@@ -191,10 +188,6 @@ export function FleetProvider({ children }) {
   useEffect(() => {
     localStorage.setItem("fleetos-settings", JSON.stringify(settings));
   }, [settings]);
-
-  useEffect(() => {
-    localStorage.setItem("fleetos-costs", JSON.stringify(costs));
-  }, [costs]);
 
   const addVehicle = (vehicle) => {
     setVehicles((current) => [
@@ -230,13 +223,13 @@ export function FleetProvider({ children }) {
   };
 
   const addCost = (cost) => {
-    setCosts((current) => [...current, { id: Date.now(), ...cost }]);
+    saveCost({ id: Date.now(), ...cost });
   };
 
   const updateCost = (id, costData) => {
-    setCosts((current) =>
-      current.map((cost) => (cost.id === id ? { ...cost, ...costData } : cost)),
-    );
+    const existing = costs.find((cost) => cost.id === id);
+
+    if (existing) saveCost({ ...existing, ...costData });
   };
 
   const updateSettings = (data) => {
@@ -299,23 +292,21 @@ export function FleetProvider({ children }) {
   };
 
   const addIncident = (incident) => {
-    setIncidents((current) => [...current, { id: Date.now(), ...incident }]);
+    saveIncident({ id: Date.now(), ...incident });
   };
 
   const updateIncident = (id, incidentData) => {
-    setIncidents((current) =>
-      current.map((incident) =>
-        incident.id === id ? { ...incident, ...incidentData } : incident,
-      ),
-    );
+    const existing = incidents.find((incident) => incident.id === id);
+
+    if (existing) saveIncident({ ...existing, ...incidentData });
   };
 
   const deleteIncident = (id) => {
-    setIncidents((current) => current.filter((incident) => incident.id !== id));
+    removeIncident(id);
   };
 
   const deleteCost = (id) => {
-    setCosts((current) => current.filter((cost) => cost.id !== id));
+    removeCost(id);
   };
 
   const updateDocument = (id, documentData) => {
