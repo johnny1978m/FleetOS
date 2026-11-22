@@ -3,73 +3,6 @@ import { useAuth } from "./useAuth";
 import { useCollection } from "../data/useCollection";
 import { FleetContext } from "./FleetContextDefinition";
 
-const initialVehicles = [
-  {
-    id: 1,
-    registration: "M AZ 5263",
-    brand: "Mercedes",
-    model: "Sprinter",
-    year: 2022,
-    km: 148520,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Attention",
-    driver: "Stanescu",
-    observations: "",
-  },
-  {
-    id: 2,
-    registration: "M AZ 5270",
-    brand: "Mercedes",
-    model: "Sprinter",
-    year: 2022,
-    km: 132800,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Good",
-    driver: "Popescu",
-    observations: "",
-  },
-  {
-    id: 3,
-    registration: "M AS 1679",
-    brand: "Ford",
-    model: "Transit",
-    year: 2021,
-    km: 176400,
-    serviceKm: 175000,
-    oilKm: 180000,
-    status: "Critical",
-    driver: "Ionescu",
-    observations: "",
-  },
-  {
-    id: 4,
-    registration: "M AZ 1725",
-    brand: "Opel",
-    model: "Vivaro",
-    year: 2022,
-    km: 119300,
-    serviceKm: 150000,
-    oilKm: 150000,
-    status: "Good",
-    driver: "Marin",
-    observations: "",
-  },
-  {
-    id: 5,
-    registration: "M AZ 1728",
-    brand: "Fiat",
-    model: "Ducato",
-    year: 2021,
-    km: 154700,
-    serviceKm: 155000,
-    oilKm: 160000,
-    status: "Attention",
-    driver: "Dumitru",
-    observations: "",
-  },
-];
 
 
 const defaultSettings = {
@@ -97,9 +30,7 @@ function loadData(key, fallback) {
 
 export function FleetProvider({ children }) {
   const { companyId } = useAuth();
-  const [vehicles, setVehicles] = useState(() =>
-    loadData("fleetos-vehicles", initialVehicles),
-  );
+  const [vehicles, saveVehicle, , vehiclesLoaded] = useCollection(companyId, "vehicles");
 
   const [documents, saveDocument, removeDocument] = useCollection(
     companyId,
@@ -107,8 +38,23 @@ export function FleetProvider({ children }) {
   );
 
   useEffect(() => {
-    localStorage.setItem("fleetos-vehicles", JSON.stringify(vehicles));
-  }, [vehicles]);
+    if (!companyId || !vehiclesLoaded || vehicles.length > 0) return;
+    const flag = "fleetos-vehicles-imported-" + companyId;
+    try {
+      if (localStorage.getItem(flag)) return;
+      const raw = localStorage.getItem("fleetos-vehicles");
+      localStorage.setItem(flag, "1");
+      const old = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(old)) {
+        old.forEach((item) => {
+          if (item && item.id) saveVehicle(item);
+        });
+      }
+    } catch (error) {
+      console.error("vehicles import", error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId, vehiclesLoaded, vehicles.length]);
 
   const [costs, saveCost, removeCost] = useCollection(companyId, "costs");
 
@@ -137,26 +83,12 @@ export function FleetProvider({ children }) {
   }, [settings]);
 
   const addVehicle = (vehicle) => {
-    setVehicles((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        ...vehicle,
-      },
-    ]);
+    saveVehicle({ id: Date.now(), ...vehicle });
   };
 
   const updateVehicle = (id, vehicleData) => {
-    setVehicles((current) =>
-      current.map((vehicle) =>
-        vehicle.id === id
-          ? {
-              ...vehicle,
-              ...vehicleData,
-            }
-          : vehicle,
-      ),
-    );
+    const existing = vehicles.find((item) => item.id === id);
+    if (existing) saveVehicle({ ...existing, ...vehicleData });
   };
 
   const addDocument = (document) => {
