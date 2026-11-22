@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import {
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
@@ -16,21 +18,38 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let version = 0;
+
     return onAuthStateChanged(auth, async (current) => {
+      const mine = ++version;
       setLoading(true);
       setError("");
       setProfile(null);
       setUser(current);
 
+      let nextProfile = null;
+      let nextError = "";
+
       if (current) {
         try {
-          setProfile(await loadProfile(current));
+          nextProfile = await loadProfile(current);
         } catch (err) {
           console.error(err);
-          setError("Could not load your company profile.");
+          if (err.message === "verify-email") {
+            nextError =
+              "Your email is not verified yet. Open the verification link we sent you (check spam), then sign in again.";
+          } else if (err.message === "removed") {
+            nextError =
+              "Your access to this company was removed. Ask your administrator.";
+          } else {
+            nextError = "Could not load your company profile.";
+          }
         }
       }
 
+      if (mine !== version) return;
+      setProfile(nextProfile);
+      setError(nextError);
       setLoading(false);
     });
   }, []);
@@ -39,6 +58,14 @@ export function AuthProvider({ children }) {
     signInWithEmailAndPassword(auth, email, password);
   const logout = () => signOut(auth);
   const resetPassword = (email) => sendPasswordResetEmail(auth, email);
+  const register = async (email, password) => {
+    const created = await createUserWithEmailAndPassword(auth, email, password);
+    try {
+      await sendEmailVerification(created.user);
+    } finally {
+      await signOut(auth);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{
@@ -49,6 +76,7 @@ export function AuthProvider({ children }) {
       role: profile?.role,
       login,
       logout,
+      register,
       resetPassword,
     }}>
       {children}
