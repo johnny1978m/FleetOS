@@ -71,53 +71,6 @@ const initialVehicles = [
   },
 ];
 
-const initialDocuments = [
-  {
-    id: 1,
-    registration: "M AZ 5263",
-    vehicle: "Mercedes Sprinter",
-    type: "Insurance",
-    document: "RCA",
-    expiry: "2026-12-15",
-    status: "Valid",
-  },
-  {
-    id: 2,
-    registration: "M AZ 5270",
-    vehicle: "Mercedes Sprinter",
-    type: "Inspection",
-    document: "TÜV",
-    expiry: "2026-10-20",
-    status: "Attention",
-  },
-  {
-    id: 3,
-    registration: "M AS 1679",
-    vehicle: "Ford Transit",
-    type: "Insurance",
-    document: "RCA",
-    expiry: "2026-09-10",
-    status: "Expired",
-  },
-  {
-    id: 4,
-    registration: "M AZ 1725",
-    vehicle: "Opel Vivaro",
-    type: "Inspection",
-    document: "TÜV",
-    expiry: "2027-02-18",
-    status: "Valid",
-  },
-  {
-    id: 5,
-    registration: "M AZ 1728",
-    vehicle: "Fiat Ducato",
-    type: "Registration",
-    document: "Vehicle Documents",
-    expiry: "2027-04-05",
-    status: "Valid",
-  },
-];
 
 const defaultSettings = {
   companyName: "FleetOS",
@@ -148,17 +101,14 @@ export function FleetProvider({ children }) {
     loadData("fleetos-vehicles", initialVehicles),
   );
 
-  const [documents, setDocuments] = useState(() =>
-    loadData("fleetos-documents", initialDocuments),
+  const [documents, saveDocument, removeDocument] = useCollection(
+    companyId,
+    "documents",
   );
 
   useEffect(() => {
     localStorage.setItem("fleetos-vehicles", JSON.stringify(vehicles));
   }, [vehicles]);
-
-  useEffect(() => {
-    localStorage.setItem("fleetos-documents", JSON.stringify(documents));
-  }, [documents]);
 
   const [costs, saveCost, removeCost] = useCollection(companyId, "costs");
 
@@ -172,13 +122,10 @@ export function FleetProvider({ children }) {
     "drivers",
   );
 
-  const [odometer, setOdometer] = useState(() =>
-    loadData("fleetos-odometer", []),
+  const [odometer, saveReading, removeReading] = useCollection(
+    companyId,
+    "odometer",
   );
-
-  useEffect(() => {
-    localStorage.setItem("fleetos-odometer", JSON.stringify(odometer));
-  }, [odometer]);
 
   const [settings, setSettings] = useState(() => ({
     ...defaultSettings,
@@ -213,13 +160,7 @@ export function FleetProvider({ children }) {
   };
 
   const addDocument = (document) => {
-    setDocuments((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        ...document,
-      },
-    ]);
+    saveDocument({ id: Date.now(), ...document });
   };
 
   const addCost = (cost) => {
@@ -271,24 +212,21 @@ export function FleetProvider({ children }) {
       return { ok: false, error: `Kilometres cannot be lower than ${lastKm}.` };
     }
 
-    setOdometer((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        vehicleId,
-        registration: vehicle.registration,
-        date: reading.date,
-        km,
-        notes: reading.notes || "",
-      },
-    ]);
+    saveReading({
+      id: Date.now(),
+      vehicleId,
+      registration: vehicle.registration,
+      date: reading.date,
+      km,
+      notes: reading.notes || "",
+    });
     updateVehicle(vehicleId, { km });
 
     return { ok: true };
   };
 
   const deleteOdometerReading = (id) => {
-    setOdometer((current) => current.filter((item) => item.id !== id));
+    removeReading(id);
   };
 
   const addIncident = (incident) => {
@@ -310,15 +248,13 @@ export function FleetProvider({ children }) {
   };
 
   const updateDocument = (id, documentData) => {
-    setDocuments((current) =>
-      current.map((document) =>
-        document.id === id ? { ...document, ...documentData } : document,
-      ),
-    );
+    const existing = documents.find((document) => document.id === id);
+
+    if (existing) saveDocument({ ...existing, ...documentData });
   };
 
   const deleteDocument = (id) => {
-    setDocuments((current) => current.filter((document) => document.id !== id));
+    removeDocument(id);
   };
 
   return (
