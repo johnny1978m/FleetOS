@@ -2,8 +2,6 @@ import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
 import "./History.css";
 
-const HISTORY_KEY = "fleetos-service-history";
-
 function idToDate(id) {
   const number = Number(id);
 
@@ -15,7 +13,7 @@ function idToDate(id) {
 }
 
 function History() {
-  const { vehicles, documents, costs, incidents } = useFleet();
+  const { vehicles, documents, costs, incidents, serviceHistory } = useFleet();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -35,11 +33,7 @@ function History() {
       });
     });
 
-    try {
-      const stored = localStorage.getItem(HISTORY_KEY);
-      const history = stored ? JSON.parse(stored) : [];
-
-      history.forEach((entry, index) => {
+    serviceHistory.forEach((entry, index) => {
         result.push({
           id: `service-${entry.id || index}`,
           type: "Service",
@@ -51,9 +45,6 @@ function History() {
           icon: "⚙",
         });
       });
-    } catch {
-      // Ignore invalid history data.
-    }
 
     documents.forEach((document, index) => {
       result.push({
@@ -106,7 +97,7 @@ function History() {
       const bDate = b.date ? new Date(b.date).getTime() : 0;
       return bDate - aDate;
     });
-  }, [vehicles, documents, costs, incidents]);
+  }, [vehicles, documents, costs, incidents, serviceHistory]);
 
   const filteredEvents = events.filter((event) => {
     const query = search.trim().toLowerCase();

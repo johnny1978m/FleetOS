@@ -73,6 +73,30 @@ export function FleetProvider({ children }) {
     "odometer",
   );
 
+  const [serviceHistory, saveServiceRecord, , serviceHistoryLoaded] =
+    useCollection(companyId, "serviceHistory");
+
+  const addServiceRecord = (entry) => saveServiceRecord(entry);
+
+  useEffect(() => {
+    if (!companyId || !serviceHistoryLoaded || serviceHistory.length > 0) return;
+    const flag = "fleetos-service-imported-" + companyId;
+    try {
+      if (localStorage.getItem(flag)) return;
+      const raw = localStorage.getItem("fleetos-service-history");
+      localStorage.setItem(flag, "1");
+      const old = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(old)) {
+        old.forEach((item) => {
+          if (item && item.id) saveServiceRecord(item);
+        });
+      }
+    } catch (error) {
+      console.error("service import", error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId, serviceHistoryLoaded, serviceHistory.length]);
+
   const [settings, setSettings] = useState(() => ({
     ...defaultSettings,
     ...loadData("fleetos-settings", {}),
@@ -195,6 +219,8 @@ export function FleetProvider({ children }) {
         vehicles,
         documents,
         addVehicle,
+        serviceHistory,
+        addServiceRecord,
         updateVehicle,
         addDocument,
         updateDocument,

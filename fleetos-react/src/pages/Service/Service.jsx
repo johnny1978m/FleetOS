@@ -2,17 +2,6 @@ import { useMemo, useState } from "react";
 import { useFleet } from "../../context/useFleet";
 import "./Service.css";
 
-const HISTORY_KEY = "fleetos-service-history";
-
-function loadHistory() {
-  try {
-    const saved = localStorage.getItem(HISTORY_KEY);
-    return saved ? JSON.parse(saved) : [];
-  } catch {
-    return [];
-  }
-}
-
 function getStatus(currentKm, targetKm) {
   const remaining = Number(targetKm || 0) - Number(currentKm || 0);
 
@@ -37,11 +26,11 @@ function formatKm(value) {
 }
 
 function Service() {
-  const { vehicles, updateVehicle } = useFleet();
+  const { vehicles, updateVehicle, serviceHistory, addServiceRecord } = useFleet();
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
-  const [history, setHistory] = useState(loadHistory);
+  const history = useMemo(() => [...serviceHistory].sort((a, b) => Number(b.id) - Number(a.id)), [serviceHistory]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
   const [form, setForm] = useState({
@@ -113,12 +102,7 @@ function Service() {
     (service) => service.status === "Attention",
   ).length;
 
-  const persistHistory = (nextHistory) => {
-    setHistory(nextHistory);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
-  };
-
-  const openHistory = (vehicleId = "") => {
+    const openHistory = (vehicleId = "") => {
     setSelectedVehicleId(String(vehicleId || ""));
     setHistoryOpen(true);
   };
@@ -158,7 +142,7 @@ function Service() {
       notes: form.notes.trim(),
     };
 
-    persistHistory([entry, ...history]);
+    addServiceRecord(entry);
 
     const recordKm = Number(form.km);
     const nextKm = Number(form.nextKm);

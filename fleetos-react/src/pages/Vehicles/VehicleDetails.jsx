@@ -3,18 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useFleet } from "../../context/useFleet";
 import "./VehicleDetails.css";
 
-const HISTORY_KEY = "fleetos-service-history";
 const DASH = String.fromCharCode(8212);
-
-function loadHistory() {
-  try {
-    const saved = localStorage.getItem(HISTORY_KEY);
-    const parsed = saved ? JSON.parse(saved) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
 
 function getMaintenanceStatus(currentKm, targetKm) {
   const target = Number(targetKm || 0);
@@ -112,6 +101,7 @@ function VehicleDetails() {
     odometer,
     addOdometerReading,
     deleteOdometerReading,
+  serviceHistory,
   } = useFleet();
   const [readingForm, setReadingForm] = useState({
     date: "",
@@ -121,10 +111,10 @@ function VehicleDetails() {
   const [readingError, setReadingError] = useState("");
 
   const history = useMemo(() => {
-    return loadHistory()
+    return serviceHistory
       .filter((entry) => String(entry.vehicleId) === String(id))
       .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
-  }, [id]);
+  }, [id, serviceHistory]);
 
   const vehicle = vehicles.find((item) => String(item.id) === String(id));
 

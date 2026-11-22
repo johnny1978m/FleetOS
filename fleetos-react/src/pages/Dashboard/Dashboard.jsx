@@ -1,18 +1,11 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useFleet } from "../../context/useFleet";
 import "./Dashboard.css";
 
 function Dashboard() {
-  const { vehicles, documents } = useFleet();
+  const { vehicles, documents, serviceHistory } = useFleet();
 
-  const serviceHistory = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem("fleetos-service-history") || "[]");
-    } catch {
-      return [];
-    }
-  }, []);
 
   const getRemaining = (vehicle) => {
     const service = Number(vehicle.serviceKm) - Number(vehicle.km);
