@@ -18,6 +18,7 @@ import Alerts from "./pages/Alerts/Alerts";
 import History from "./pages/History/History";
 import Analytics from "./pages/Analytics/Analytics";
 import Settings from "./pages/Settings/Settings";
+import Team from "./pages/Team/Team";
 
 function AuthGate({ children }) {
   const { user, loading, error, logout } = useAuth();
@@ -56,6 +57,7 @@ function App() {
             <Route path="/history" element={<History />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/team" element={<Team />} />
           </Routes>
         </Layout>
       </FleetProvider>

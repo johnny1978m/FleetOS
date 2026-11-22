@@ -13,6 +13,7 @@ const navigation = [
   { to: "/alerts", label: "Alerts", icon: "⚠" },
   { to: "/history", label: "History", icon: "◷" },
   { to: "/analytics", label: "Analytics", icon: "▥" },
+  { to: "/team", label: "Team", icon: "\u25CF" },
   { to: "/settings", label: "Settings", icon: "◉" },
 ];
 

@@ -47,6 +47,10 @@ const pageInfo = {
     title: "Vehicle Profile",
     subtitle: "Vehicle details, documents and service history",
   },
+  "/team": {
+    title: "Team",
+    subtitle: "People and roles",
+  },
   "/settings": {
     title: "Settings",
     subtitle: "FleetOS application settings",
