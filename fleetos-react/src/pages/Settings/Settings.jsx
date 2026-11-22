@@ -171,4 +171,9 @@ function Settings() {
   );
 }
 
-export default Settings;
+function SettingsPage() {
+  const { settingsLoaded } = useFleet();
+  return settingsLoaded ? <Settings /> : <p>Loading...</p>;
+}
+
+export default SettingsPage;

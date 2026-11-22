@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "./useAuth";
 import { useCollection } from "../data/useCollection";
 import { FleetContext } from "./FleetContextDefinition";
@@ -97,14 +97,28 @@ export function FleetProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, serviceHistoryLoaded, serviceHistory.length]);
 
-  const [settings, setSettings] = useState(() => ({
-    ...defaultSettings,
-    ...loadData("fleetos-settings", {}),
-  }));
+  const [settingsDocs, saveSettingsDoc, , settingsLoaded] = useCollection(
+    companyId,
+    "settings",
+  );
+  const remoteSettings = settingsDocs.find((item) => item.id === "main");
+  const settings = { ...defaultSettings, ...remoteSettings };
 
   useEffect(() => {
-    localStorage.setItem("fleetos-settings", JSON.stringify(settings));
-  }, [settings]);
+    if (!companyId || !settingsLoaded || remoteSettings) return;
+    const flag = "fleetos-settings-imported-" + companyId;
+    try {
+      if (localStorage.getItem(flag)) return;
+      localStorage.setItem(flag, "1");
+      const old = loadData("fleetos-settings", {});
+      if (old && Object.keys(old).length > 0) {
+        saveSettingsDoc({ ...defaultSettings, ...old, id: "main" });
+      }
+    } catch (error) {
+      console.error("settings import", error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId, settingsLoaded, remoteSettings]);
 
   const addVehicle = (vehicle) => {
     saveVehicle({ id: Date.now(), ...vehicle });
@@ -130,7 +144,7 @@ export function FleetProvider({ children }) {
   };
 
   const updateSettings = (data) => {
-    setSettings((current) => ({ ...current, ...data }));
+    saveSettingsDoc({ ...settings, ...data, id: "main" });
   };
 
   const addDriver = (driver) => {
@@ -237,6 +251,7 @@ export function FleetProvider({ children }) {
         deleteDriver,
         settings,
         updateSettings,
+        settingsLoaded,
         updateCost,
         odometer,
         addOdometerReading,
