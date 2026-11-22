@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function memberPath(cid) {
+      return /databases/$(database)/documents/companies/$(cid)/members/$(request.auth.uid);
+    }
+    function isMember(cid) { return signedIn() && exists(memberPath(cid)); }
+    function roleOf(cid) { return get(memberPath(cid)).data.role; }
+    function canEdit(cid) { return isMember(cid) && roleOf(cid) in ['admin', 'manager']; }
+    function isAdmin(cid) { return isMember(cid) && roleOf(cid) == 'admin'; }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function invitePath() { return /databases/$(database)/documents/invites/$(myEmail()); }
+    function hasInvite(cid, r) {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && exists(invitePath())
+        && get(invitePath()).data.companyId == cid
+        && get(invitePath()).data.role == r;
+    }
+
+    match /companies/{companyId} {
+      allow read: if isMember(companyId);
+      allow create: if signedIn()
+        && companyId == request.auth.uid
+        && request.resource.data.ownerUid == request.auth.uid;
+
+      match /members/{memberId} {
+        allow read: if signedIn() && (memberId == request.auth.uid || isMember(companyId));
+        allow create: if signedIn() && memberId == request.auth.uid && (
+          (companyId == request.auth.uid && request.resource.data.role == 'admin')
+          || hasInvite(companyId, request.resource.data.role));
+        allow update, delete: if isAdmin(companyId);
+      }
+
+      match /vehicles/{id} { allow read: if isMember(companyId); allow write: if canEdit(companyId); }
+      match /documents/{id} { allow read: if isMember(companyId); allow write: if canEdit(companyId); }
+      match /costs/{id} { allow read: if isMember(companyId); allow write: if canEdit(companyId); }
+      match /drivers/{id} { allow read: if isMember(companyId); allow write: if canEdit(companyId); }
+      match /incidents/{id} { allow read: if isMember(companyId); allow write: if canEdit(companyId); }
+      match /odometer/{id} { allow read: if isMember(companyId); allow write: if canEdit(companyId); }
+      match /serviceHistory/{id} { allow read: if isMember(companyId); allow write: if canEdit(companyId); }
+      match /settings/{id} { allow read: if isMember(companyId); allow write: if canEdit(companyId); }
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && hasInvite(request.resource.data.companyId, request.resource.data.role);
+    }
+
+    match /invites/{email} {
+      allow read: if signedIn() && (myEmail() == email || isAdmin(resource.data.companyId));
+      allow create: if signedIn()
+        && isAdmin(request.resource.data.companyId)
+        && request.resource.data.role in ['admin', 'manager', 'driver'];
+      allow update: if signedIn()
+        && isAdmin(resource.data.companyId)
+        && isAdmin(request.resource.data.companyId)
+        && request.resource.data.role in ['admin', 'manager', 'driver'];
+      allow delete: if signedIn() && (myEmail() == email || isAdmin(resource.data.companyId));
+    }
+  }
+}
