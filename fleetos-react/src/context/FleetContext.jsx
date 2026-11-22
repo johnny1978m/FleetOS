@@ -29,7 +29,13 @@ function loadData(key, fallback) {
 }
 
 export function FleetProvider({ children }) {
-  const { companyId } = useAuth();
+  const { companyId, role } = useAuth();
+  const canEdit = role === "admin" || role === "manager";
+  const guard = (fn) => (...args) => {
+    if (canEdit) return fn(...args);
+    window.alert("Your role is view-only. Ask an administrator to change this.");
+    return { ok: false, error: "View-only role." };
+  };
   const [vehicles, saveVehicle, , vehiclesLoaded] = useCollection(companyId, "vehicles");
 
   const [documents, saveDocument, removeDocument] = useCollection(
@@ -232,31 +238,32 @@ export function FleetProvider({ children }) {
       value={{
         vehicles,
         documents,
-        addVehicle,
+        addVehicle: guard(addVehicle),
         serviceHistory,
-        addServiceRecord,
-        updateVehicle,
-        addDocument,
-        updateDocument,
-        deleteDocument,
+        addServiceRecord: guard(addServiceRecord),
+        updateVehicle: guard(updateVehicle),
+        addDocument: guard(addDocument),
+        updateDocument: guard(updateDocument),
+        deleteDocument: guard(deleteDocument),
         costs,
-        addCost,
+        addCost: guard(addCost),
         incidents,
-        addIncident,
-        updateIncident,
-        deleteIncident,
+        addIncident: guard(addIncident),
+        updateIncident: guard(updateIncident),
+        deleteIncident: guard(deleteIncident),
         drivers,
-        addDriver,
-        updateDriver,
-        deleteDriver,
+        addDriver: guard(addDriver),
+        updateDriver: guard(updateDriver),
+        deleteDriver: guard(deleteDriver),
         settings,
-        updateSettings,
+        updateSettings: guard(updateSettings),
         settingsLoaded,
-        updateCost,
+        canEdit,
+        updateCost: guard(updateCost),
         odometer,
-        addOdometerReading,
-        deleteOdometerReading,
-        deleteCost,
+        addOdometerReading: guard(addOdometerReading),
+        deleteOdometerReading: guard(deleteOdometerReading),
+        deleteCost: guard(deleteCost),
       }}
     >
       {children}
